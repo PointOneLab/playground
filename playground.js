@@ -247,7 +247,6 @@
       // Replace the original code element with the newly formatted <pre><code>
       codeElement.parentNode.replaceChild(preElement, codeElement);
     
-      Prism.highlightElement(codeElement);
     
         // Apply styles to the <code> element itself
       Object.assign(codeElement.style, {
