@@ -1,4 +1,7 @@
+console.log('=== PLAYGROUND.JS STARTING ===');
 
+(function() {
+    console.log('Inside self-executing function');
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/Draggable.min.js"></script>
@@ -1367,4 +1370,6 @@ const DevModeManager = {
 
 // Initialize Dev Mode Manager
 document.addEventListener('DOMContentLoaded', () => DevModeManager.init());
-</script>
+</script>})();
+
+

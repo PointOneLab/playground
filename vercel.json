@@ -1,19 +1,15 @@
 {
     "headers": [
       {
-        "source": "/(.*)",
+        "source": "/playground.js",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",
-            "value": "https://www.pointonelab.com, https://pointonelab.com"
+            "value": "*"
           },
           {
-            "key": "Access-Control-Allow-Methods",
-            "value": "GET"
-          },
-          {
-            "key": "Access-Control-Allow-Headers",
-            "value": "Origin, X-Requested-With, Content-Type, Accept"
+            "key": "Content-Type",
+            "value": "application/javascript"
           }
         ]
       }
