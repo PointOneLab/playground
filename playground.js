@@ -1,5 +1,29 @@
-console.log('Playground.js is loaded and executing!');
+// At the start of playground.js
+(function() {
+  // Log initialization
+  console.log('Script initializing...');
 
+  // Check if we're running from an allowed domain
+  const allowedOrigins = [
+      'https://www.pointonelab.com',
+      'https://pointonelab.com'
+  ];
+
+  try {
+      const currentOrigin = window.location.origin;
+      if (!allowedOrigins.includes(currentOrigin)) {
+          console.warn(`Access from unauthorized origin: ${currentOrigin}`);
+          // You can choose to return early here if you want to block execution
+          // return;
+      }
+
+      // Your existing playground.js code goes here
+      // ... rest of your code ...
+
+  } catch (error) {
+      console.error('Error in playground.js:', error);
+  }
+})();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/Draggable.min.js"></script>
