@@ -88,29 +88,30 @@ const DevModeManager = {
                 const pageIdentifier = `${contextCollection}/${contextId}`;
                 
                 // Get current position and order values
-                const positionElement = item.querySelector('.pow-item-position');
+                const positionElement = item.querySelector('.pow-itemposition');
                 const orderElement = item.querySelector('.pow-item-order');
                 
                 // Parse existing values
-                const existingPosition = this.parsePositionOrderFormat(positionElement?.innerText || '');
-                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
+                const rawPositionContent = positionElement?.getAttribute('data-raw-content') || '';
+                const existingPosition = this.parsePositionOrderFormat(rawPositionContent);
+                const rawOrderContent = orderElement?.getAttribute('data-raw-content') || '';
+                const existingOrder = this.parsePositionOrderFormat(rawOrderContent);
                 
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
                 
                 // Update values for current page
-                existingPosition[pageIdentifier] = newPosition;
-                existingOrder[pageIdentifier] = newOrder;
+                existingPosition[pageIdentifier] = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
+                existingOrder[pageIdentifier] = item.style.zIndex || '1';
                 
-                // Ensure default values exist
-                if (!('default' in existingPosition)) {
-                    existingPosition['default'] = newPosition;
-                }
-                if (!('default' in existingOrder)) {
-                    existingOrder['default'] = newOrder;
-                }
-                
+                // Serialize and update the data-raw-content attributes
+const serializedPosition = this.stringifyPositionOrderFormat(existingPosition);
+positionElement.setAttribute('data-raw-content', serializedPosition);
+
+const serializedOrder = this.stringifyPositionOrderFormat(existingOrder);
+orderElement.setAttribute('data-raw-content', serializedOrder);
+
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,
