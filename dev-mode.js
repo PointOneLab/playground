@@ -142,11 +142,18 @@ const DevModeManager = {
                 const positionElement = item.querySelector('.pow-item-coordinates');
                 const orderElement = item.querySelector('.pow-item-order');
             
-                // Step 1: Log initial data-raw-content
-                const rawContent = positionElement?.getAttribute('data-raw-content') || '';
-                console.log(`[dragend] Initial data-raw-content:`, rawContent);
+                // Step 1: Check data-raw-content
+                console.log(`[dragend] Checking positionElement:`, positionElement);
+                console.log(`[dragend] Checking data-raw-content attribute:`, positionElement?.getAttribute('data-raw-content'));
             
-                // Step 2: Parse the full object from data-raw-content
+                // Step 2: Parse existing data-raw-content or reinitialize if missing
+                let rawContent = positionElement?.getAttribute('data-raw-content') || '';
+                if (!rawContent) {
+                    console.warn(`[dragend] data-raw-content is missing. Reinitializing with default.`);
+                    rawContent = `"default": "0,0"`;
+                    positionElement.setAttribute('data-raw-content', rawContent);
+                }
+            
                 const existingPosition = this.parsePositionOrderFormat(rawContent);
                 console.log(`[dragend] Parsed object from data-raw-content:`, existingPosition);
             
@@ -154,7 +161,7 @@ const DevModeManager = {
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 console.log(`[dragend] New position for ${pageIdentifier}:`, newPosition);
             
-                // Step 4: Explicitly merge new data into the parsed object
+                // Step 4: Merge new data into the parsed object
                 existingPosition[pageIdentifier] = newPosition; // Add or update the key-value pair
                 console.log(`[dragend] Merged object (after adding new position):`, existingPosition);
             
