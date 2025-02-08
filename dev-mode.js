@@ -91,23 +91,41 @@ const DevModeManager = {
                 const positionElement = item.querySelector('.pow-item-position');
                 const orderElement = item.querySelector('.pow-item-order');
                 
+                // Keep track of original text to preserve format
+                const originalPositionText = positionElement?.innerText || '';
+                const originalOrderText = orderElement?.innerText || '';
+                
                 // Parse existing values
-                const existingPosition = this.parsePositionOrderFormat(positionElement?.innerText || '');
-                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
+                const existingPosition = this.parsePositionOrderFormat(originalPositionText);
+                const existingOrder = this.parsePositionOrderFormat(originalOrderText);
                 
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
                 
-                // Update values ONLY for current page
-                existingPosition[pageIdentifier] = newPosition;
-                existingOrder[pageIdentifier] = newOrder;
+                // Only update the current page value
+                const updatedPosition = { ...existingPosition };
+                const updatedOrder = { ...existingOrder };
+                
+                updatedPosition[pageIdentifier] = newPosition;
+                updatedOrder[pageIdentifier] = newOrder;
+                
+                console.log('Values being saved:', {
+                    original: {
+                        position: existingPosition,
+                        order: existingOrder
+                    },
+                    updated: {
+                        position: updatedPosition,
+                        order: updatedOrder
+                    }
+                });
                 
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,
-                    position: this.stringifyPositionOrderFormat(existingPosition),
-                    order: this.stringifyPositionOrderFormat(existingOrder),
+                    position: this.stringifyPositionOrderFormat(updatedPosition),
+                    order: this.stringifyPositionOrderFormat(updatedOrder),
                     collectionType
                 });
                 
