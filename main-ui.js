@@ -196,35 +196,25 @@ document.addEventListener("DOMContentLoaded", function() {
         const boardRect = board.getBoundingClientRect();
         const itemRect = item.getBoundingClientRect();
     
-        // Calculate center position
         const leftPercent = (((itemRect.left - boardRect.left) + itemRect.width / 2) / boardRect.width) * 100;
         const topPercent = (((itemRect.top - boardRect.top) + itemRect.height / 2) / boardRect.height) * 100;
     
-        // Format with 4 decimal places
-        const formattedLeft = leftPercent.toFixed(4);
-        const formattedTop = topPercent.toFixed(4);
-        const formattedPosition = `${formattedLeft},${formattedTop}`;
-    
-        // Store values
-        item.dataset.leftPercent = formattedLeft;
-        item.dataset.topPercent = formattedTop;
+        // Store original values without formatting
+        item.dataset.leftPercent = leftPercent;
+        item.dataset.topPercent = topPercent;
         
-        // Update both position and coordinates displays
+        // Update both displays with formatted values
         const positionElement = item.querySelector('.pow-itemposition');
         const coordsDisplay = item.querySelector('.pow-item-coordinates');
         
-        if (positionElement) {
-            positionElement.textContent = formattedPosition;
-        }
         if (coordsDisplay) {
-            coordsDisplay.textContent = formattedPosition;
+            coordsDisplay.textContent = `${leftPercent.toFixed(4)},${topPercent.toFixed(4)}`;
+        }
+        if (positionElement) {
+            positionElement.textContent = `${leftPercent.toFixed(4)},${topPercent.toFixed(4)}`;
         }
         
-        console.log('Stored position:', {
-            itemId: item.getAttribute('data-item-id'),
-            position: formattedPosition,
-            raw: { leftPercent, topPercent }
-        });
+        console.log(`Stored position for item: left ${leftPercent}%, top ${topPercent}%`);
     }
   
     
@@ -387,7 +377,15 @@ document.addEventListener("DOMContentLoaded", function() {
   
     function positionItemWithLoadedDimensions(item, x, y, mediaElement = null) {
         const boardRect = board.getBoundingClientRect();
-        let elementForDimensions = mediaElement || item;
+        let elementForDimensions;
+        
+        if (mediaElement) {
+            // For media elements (images or videos), use their direct dimensions
+            elementForDimensions = mediaElement;
+        } else {
+            // For other items, use the item's dimensions
+            elementForDimensions = item;
+        }
     
         // Get precise measurements
         const rect = elementForDimensions.getBoundingClientRect();
@@ -400,24 +398,30 @@ document.addEventListener("DOMContentLoaded", function() {
         item.style.left = `${newLeftPx}px`;
         item.style.top = `${newTopPx}px`;
     
-        // Format position with 4 decimal places
-        const formattedPosition = `${parseFloat(x).toFixed(4)},${parseFloat(y).toFixed(4)}`;
-    
         // Update both displays
         const positionElement = item.querySelector('.pow-itemposition');
         const coordsDisplay = item.querySelector('.pow-item-coordinates');
         
-        if (positionElement) {
-            positionElement.textContent = formattedPosition;
-        }
         if (coordsDisplay) {
-            coordsDisplay.textContent = formattedPosition;
+            coordsDisplay.textContent = `${x.toFixed(4)},${y.toFixed(4)}`;
+        }
+        if (positionElement) {
+            positionElement.textContent = `${x.toFixed(4)},${y.toFixed(4)}`;
         }
     
+        // Debug logging
         console.log('Positioning details:', {
-            itemId: item.getAttribute('data-item-id'),
-            position: formattedPosition,
-            pixels: { left: newLeftPx, top: newTopPx }
+            type: mediaElement ? (mediaElement.tagName === 'VIDEO' ? 'video' : 'image') : 'other',
+            dimensions: {
+                width: rect.width,
+                height: rect.height
+            },
+            position: {
+                x,
+                y,
+                leftPx: newLeftPx,
+                topPx: newTopPx
+            }
         });
     }
     
