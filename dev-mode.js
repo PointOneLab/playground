@@ -103,13 +103,7 @@ const DevModeManager = {
                 existingPosition[pageIdentifier] = newPosition;
                 existingOrder[pageIdentifier] = newOrder;
                 
-                // Ensure default values exist
-                if (!('default' in existingPosition)) {
-                    existingPosition['default'] = newPosition;
-                }
-                if (!('default' in existingOrder)) {
-                    existingOrder['default'] = newOrder;
-                }
+                
                 positionElement.setAttribute('data-raw-content', this.stringifyPositionOrderFormat(existingPosition));
                 // Store changes
                 window.positionChanges.set(itemId, {
