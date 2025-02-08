@@ -266,6 +266,11 @@ document.addEventListener("DOMContentLoaded", function() {
             if (!positionElement) return;
             
             const positionText = positionElement.innerText.trim();
+            console.log('Item Position Data:', {
+                rawInnerText: positionElement.innerText,
+                trimmedText: positionText,
+                htmlContent: positionElement.innerHTML
+            });
             // Store original format
             positionElement.dataset.originalFormat = positionText;
   
