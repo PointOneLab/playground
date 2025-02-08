@@ -95,6 +95,7 @@ const DevModeManager = {
                 
                 // Parse existing values
                 const existingPosition = this.parsePositionOrderFormat(positionElement?.getAttribute('data-raw-content') || '');
+                console.log(`[dragend] Parsed existingPosition object:`, existingPosition);
                 const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
                 
                 // Get new values
