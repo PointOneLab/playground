@@ -256,10 +256,18 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   
     // Position items based on their defined coordinates or predefined names
-  function positionExistingItems() {
-      document.querySelectorAll('.pow-item').forEach(item => {
-          const positionText = item.querySelector('.pow-itemposition')?.innerText.trim();
-          if (!positionText) return;
+    function positionExistingItems() {
+        const contextCollection = document.body.getAttribute('pow-database-collection');
+        const contextId = document.body.getAttribute('pow-database-id');
+        const pageIdentifier = `${contextCollection}/${contextId}`;
+    
+        document.querySelectorAll('.pow-item').forEach(item => {
+            const positionElement = item.querySelector('.pow-itemposition');
+            if (!positionElement) return;
+            
+            const positionText = positionElement.innerText.trim();
+            // Store original format
+            positionElement.dataset.originalFormat = positionText;
   
           let [x, y] = [0, 0];
           if (predefinedLocations[positionText]) {

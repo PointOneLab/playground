@@ -89,20 +89,18 @@ const DevModeManager = {
                 
                 // Get current position and order values
                 const positionElement = item.querySelector('.pow-itemposition');
+                const orderElement = item.querySelector('.pow-item-order');
+                
                 console.log('Position element found:', {
                     element: positionElement,
                     text: positionElement?.innerText,
-                    rawHTML: positionElement?.innerHTML
+                    rawHTML: positionElement?.innerHTML,
+                    originalFormat: positionElement?.dataset.originalFormat
                 });
-                const orderElement = item.querySelector('.pow-item-order');
                 
-                // Keep track of original text to preserve format
-                const originalPositionText = positionElement?.innerText || '';
-                const originalOrderText = orderElement?.innerText || '';
-                
-                // Parse existing values
-                const existingPosition = this.parsePositionOrderFormat(originalPositionText);
-                const existingOrder = this.parsePositionOrderFormat(originalOrderText);
+                // Parse existing values from the original format stored in data attribute
+                const existingPosition = this.parsePositionOrderFormat(positionElement?.dataset.originalFormat || '');
+                const existingOrder = this.parsePositionOrderFormat(orderElement?.dataset.originalFormat || '');
                 
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
@@ -114,13 +112,12 @@ const DevModeManager = {
                 
                 updatedPosition[pageIdentifier] = newPosition;
                 updatedOrder[pageIdentifier] = newOrder;
-
-                    // Add this console.log here
-    console.log('Before stringify:', {
-        existingPosition,
-        updatedPosition: existingPosition,
-        stringified: this.stringifyPositionOrderFormat(existingPosition)
-    });
+                
+                console.log('Before stringify:', {
+                    existingPosition,
+                    updatedPosition,
+                    stringified: this.stringifyPositionOrderFormat(updatedPosition)
+                });
                 
                 console.log('Values being saved:', {
                     original: {
