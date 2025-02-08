@@ -109,6 +109,13 @@ const DevModeManager = {
                 
                 updatedPosition[pageIdentifier] = newPosition;
                 updatedOrder[pageIdentifier] = newOrder;
+
+                    // Add this console.log here
+    console.log('Before stringify:', {
+        existingPosition,
+        updatedPosition: existingPosition,
+        stringified: this.stringifyPositionOrderFormat(existingPosition)
+    });
                 
                 console.log('Values being saved:', {
                     original: {
