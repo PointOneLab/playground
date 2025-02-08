@@ -123,17 +123,17 @@ const DevModeManager = {
             
                 // Step 7: Parse and update order (if applicable)
                 let rawOrderContent = orderElement?.getAttribute('data-raw-content') || '';
-if (!rawOrderContent) {
-    console.warn(`[dragend] data-raw-content for order is missing. Reinitializing with default.`);
-    rawOrderContent = `"default": "1"`;
-    orderElement.setAttribute('data-raw-content', rawOrderContent);
-}
-const existingOrder = this.parsePositionOrderFormat(rawOrderContent);
+                if (!rawOrderContent) {
+                console.warn(`[dragend] data-raw-content for order is missing. Reinitializing with default.`);
+                rawOrderContent = `"default": "1"`;
+                orderElement.setAttribute('data-raw-content', rawOrderContent);
+                }
+                const existingOrder = this.parsePositionOrderFormat(rawOrderContent);
                 const newOrder = item.style.zIndex || '1';
                 existingOrder[pageIdentifier] = newOrder;
                 const serializedOrder = this.stringifyPositionOrderFormat(existingOrder);
-console.log(`[dragend] Serialized data-raw-content for order:`, serializedOrder);
-orderElement.setAttribute('data-raw-content', serializedOrder);
+                console.log(`[dragend] Serialized data-raw-content for order:`, serializedOrder);
+                orderElement.setAttribute('data-raw-content', serializedOrder);
             
                 // Store changes in the global map
                 window.positionChanges.set(itemId, {
