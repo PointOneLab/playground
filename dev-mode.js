@@ -3,29 +3,29 @@
 // Dev Mode Manager
 const DevModeManager = {
     parsePositionOrderFormat(value) {
-        if (!value || !value.includes(':') || !value.includes(';')) {
+        if (!value || !value.includes(':')) {
             return {};
         }
-        
-        const entries = value.split(';').map(entry => entry.trim()).filter(entry => entry);
         const result = {};
-        
+        const entries = value.split(';').map(entry => entry.trim()).filter(entry => entry);
         entries.forEach(entry => {
-            const [key, value] = entry.split(':').map(part => part.trim());
-            if (key && value) {
-                const cleanKey = key.replace(/^["']|["']$/g, '');
-                const cleanValue = value.replace(/^["']|["']$/g, '');
-                result[cleanKey] = cleanValue;
+            const separatorIndex = entry.indexOf(':');
+            if (separatorIndex === -1) return; // Skip invalid entries
+            const key = entry.slice(0, separatorIndex).trim().replace(/"/g, '');
+            const val = entry.slice(separatorIndex + 1).trim().replace(/"/g, '');
+            if (key && val) {
+                result[key] = val;
             }
         });
-        
         return result;
-    },
+    }
 
     stringifyPositionOrderFormat(data) {
         return Object.entries(data)
             .map(([key, value]) => `"${key}": "${value}"`)
             .join('; ');
+
+            console.log(`[stringifyPositionOrderFormat] Input object:`, obj);
     },
 
     init() {
