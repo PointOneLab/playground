@@ -1,5 +1,3 @@
-
-
 // Dev Mode Manager
 const DevModeManager = {
     parsePositionOrderFormat(value) {
@@ -21,7 +19,7 @@ const DevModeManager = {
     },
 
     stringifyPositionOrderFormat(obj) {
-        console.log(`[stringifyPositionOrderFormat] Input object:`, obj); // Add this line
+        console.log(`[stringifyPositionOrderFormat] Input object:`, obj);
         return Object.entries(obj)
             .map(([key, value]) => `"${key}": "${value}"`)
             .join('; ');
@@ -95,6 +93,12 @@ const DevModeManager = {
                 // Parse existing values
                 const existingPosition = this.parsePositionOrderFormat(positionElement?.getAttribute('data-raw-content') || '');
                 console.log(`[dragend] Parsed existingPosition object:`, existingPosition);
+
+                // Debugging Code for Parsing Test
+                const testValue = `"default": "25,75"; "board/6": "~(25,25)"; "board/148": "75,25"; "static/home": "75,75"`;
+                const parsedResult = this.parsePositionOrderFormat(testValue);
+                console.log(`[Parsing Test] Parsed result:`, parsedResult);
+
                 const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
                 
                 // Get new values
@@ -102,13 +106,22 @@ const DevModeManager = {
                 const newOrder = item.style.zIndex || '1';
                 
                 // Update values for current page
+                console.log(`[Before Update] existingPosition:`, existingPosition);
+
                 existingPosition[pageIdentifier] = newPosition;
-                console.log(`[dragend] Updated existingPosition object (after adding new position):`, existingPosition);
+
+                console.log(`[After Update] existingPosition:`, existingPosition);
+
                 existingOrder[pageIdentifier] = newOrder;
                 
                 
                 positionElement.setAttribute('data-raw-content', this.stringifyPositionOrderFormat(existingPosition));
                 console.log(`[dragend] Updated data-raw-content attribute:`, positionElement.getAttribute('data-raw-content'));
+
+                // Debugging Code for Serialization Test
+                const serialized = this.stringifyPositionOrderFormat(existingPosition);
+                console.log(`[Serialization Test] Serialized result:`, serialized);
+
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,
