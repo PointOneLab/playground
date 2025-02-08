@@ -66,55 +66,69 @@ const DevModeManager = {
           const coordinatesElement = item.querySelector('.pow-item-coordinates');
           const collectionType = this.getItemCollectionType(item);
           
-          console.log('Initializing draggable tracking for item:', {
+          console.log('Initial state:', {
             itemId: item.getAttribute('data-item-id'),
-            hasPositionElement: !!positionElement,
-            hasCoordinatesElement: !!coordinatesElement
+            positionText: positionElement?.textContent,
+            coordinatesText: coordinatesElement?.textContent,
+            dataset: {
+              left: item.dataset.leftPercent,
+              top: item.dataset.topPercent
+            }
           });
           
           draggable.addEventListener('drag', () => {
             const boardRect = document.querySelector('.pow-board').getBoundingClientRect();
             const itemRect = item.getBoundingClientRect();
             
-            const leftPercent = ((itemRect.left - boardRect.left + itemRect.width / 2) / boardRect.width * 100);
-            const topPercent = ((itemRect.top - boardRect.top + itemRect.height / 2) / boardRect.height * 100);
-            
-            const roundedLeft = leftPercent.toFixed(4);
-            const roundedTop = topPercent.toFixed(4);
-            
-            console.log('Drag update:', {
-              itemId: item.getAttribute('data-item-id'),
-              position: `${roundedLeft},${roundedTop}`,
-              elements: {
-                positionElement: positionElement?.textContent,
-                coordinatesElement: coordinatesElement?.textContent
+            // Log raw calculations
+            console.log('Calculation values:', {
+              boardRect: {
+                left: boardRect.left,
+                top: boardRect.top,
+                width: boardRect.width,
+                height: boardRect.height
+              },
+              itemRect: {
+                left: itemRect.left,
+                top: itemRect.top,
+                width: itemRect.width,
+                height: itemRect.height
               }
             });
             
-            // Store rounded values
+            const leftPercent = ((itemRect.left - boardRect.left + itemRect.width / 2) / boardRect.width * 100);
+            const topPercent = ((itemRect.top - boardRect.top + itemRect.height / 2) / boardRect.height * 100);
+            
+            const roundedLeft = parseFloat(leftPercent).toFixed(4);
+            const roundedTop = parseFloat(topPercent).toFixed(4);
+            
+            // Update both elements with the same value
+            const positionText = `${roundedLeft},${roundedTop}`;
+            
+            if (positionElement) {
+                positionElement.textContent = positionText;
+            }
+            if (coordinatesElement) {
+                coordinatesElement.textContent = positionText;
+            }
+            
+            // Store values
             item.dataset.leftPercent = roundedLeft;
             item.dataset.topPercent = roundedTop;
             
-            if (positionElement) {
-                positionElement.textContent = `${roundedLeft},${roundedTop}`;
-            }
-            if (coordinatesElement) {
-                coordinatesElement.textContent = `${roundedLeft},${roundedTop}`;
-            }
+            console.log('Updated position:', {
+              raw: { leftPercent, topPercent },
+              rounded: { roundedLeft, roundedTop },
+              elements: {
+                position: positionElement?.textContent,
+                coordinates: coordinatesElement?.textContent
+              }
+            });
           });
   
           draggable.addEventListener('dragend', () => {
             const itemId = item.getAttribute('data-item-id');
             const position = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
-            
-            console.log('Drag end:', {
-              itemId,
-              finalPosition: position,
-              elements: {
-                positionElement: positionElement?.textContent,
-                coordinatesElement: coordinatesElement?.textContent
-              }
-            });
             
             // Store change
             window.positionChanges.set(itemId, {
