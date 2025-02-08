@@ -63,27 +63,42 @@ const DevModeManager = {
           if (!draggable) return;
   
           const positionElement = item.querySelector('.pow-itemposition');
+          const coordinatesElement = item.querySelector('.pow-item-coordinates');
           const collectionType = this.getItemCollectionType(item);
           
-          // Real-time position update during drag
-          draggable.addEventListener('drag', function() {
+          // Calculate initial position
+          const updatePosition = () => {
             const boardRect = document.querySelector('.pow-board').getBoundingClientRect();
             const itemRect = item.getBoundingClientRect();
             
             const leftPercent = ((itemRect.left - boardRect.left + itemRect.width / 2) / boardRect.width * 100);
             const topPercent = ((itemRect.top - boardRect.top + itemRect.height / 2) / boardRect.height * 100);
             
-            // Store rounded values
-            item.dataset.leftPercent = leftPercent.toFixed(4);
-            item.dataset.topPercent = topPercent.toFixed(4);
+            const roundedLeft = leftPercent.toFixed(4);
+            const roundedTop = topPercent.toFixed(4);
             
-            // Update position display in real-time
+            // Store rounded values
+            item.dataset.leftPercent = roundedLeft;
+            item.dataset.topPercent = roundedTop;
+            
+            // Update both displays
+            const positionText = `${roundedLeft},${roundedTop}`;
             if (positionElement) {
-                positionElement.textContent = `${leftPercent.toFixed(4)},${topPercent.toFixed(4)}`;
+                positionElement.textContent = positionText;
             }
-          });
+            if (coordinatesElement) {
+                coordinatesElement.textContent = positionText;
+            }
+          };
+  
+          // Initial position calculation
+          updatePosition();
+          
+          // Update during drag
+          draggable.addEventListener('drag', updatePosition);
   
           draggable.addEventListener('dragend', () => {
+            updatePosition();
             const itemId = item.getAttribute('data-item-id');
             const position = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
             
