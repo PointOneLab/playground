@@ -82,20 +82,21 @@ const DevModeManager = {
             const collectionType = this.getItemCollectionType(item);
             
             draggable.addEventListener('dragend', () => {
-
-                console.log('Dragend start - Position data:', {
-                    element: positionElement,
-                    originalFormat: positionElement?.dataset.originalFormat,
-                    currentText: positionElement?.innerText
-                });
                 const itemId = item.getAttribute('data-item-id');
                 const contextCollection = document.body.getAttribute('pow-database-collection');
                 const contextId = document.body.getAttribute('pow-database-id');
                 const pageIdentifier = `${contextCollection}/${contextId}`;
                 
-                // Get current position and order values
+                // Get current position and order values first
                 const positionElement = item.querySelector('.pow-itemposition');
                 const orderElement = item.querySelector('.pow-item-order');
+    
+                // Now we can log position data
+                console.log('Dragend start - Position data:', {
+                    element: positionElement,
+                    originalFormat: positionElement?.dataset.originalFormat,
+                    currentText: positionElement?.innerText
+                });
                 
                 console.log('Dragend triggered - Elements found:', {
                     positionElement: {
