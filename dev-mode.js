@@ -88,11 +88,11 @@ const DevModeManager = {
                 const pageIdentifier = `${contextCollection}/${contextId}`;
                 
                 // Get current position and order values
-                const positionElement = item.querySelector('.pow-item-position');
+                const positionElement = item.querySelector('.pow-itemposition');
                 const orderElement = item.querySelector('.pow-item-order');
                 
                 // Parse existing values
-                const existingPosition = this.parsePositionOrderFormat(positionElement?.innerText || '');
+                const existingPosition = this.parsePositionOrderFormat(positionElement?.getAttribute('data-raw-content') || '');
                 const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
                 
                 // Get new values
@@ -110,7 +110,7 @@ const DevModeManager = {
                 if (!('default' in existingOrder)) {
                     existingOrder['default'] = newOrder;
                 }
-                
+                positionElement.setAttribute('data-raw-content', this.stringifyPositionOrderFormat(existingPosition));
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,

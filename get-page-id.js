@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
   
           // Render the resolved content
+          element.setAttribute('data-raw-content', rawContent);
           element.innerText = resolvedValue;
         } else {
           // Use the entire content as the default if no structured format is detected
