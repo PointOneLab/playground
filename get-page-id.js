@@ -36,6 +36,10 @@ document.addEventListener("DOMContentLoaded", function () {
   
           // Render the resolved content
           element.innerText = resolvedValue;
+
+          console.log(`[DOMContentLoaded] data-raw-content attribute:`, element.getAttribute('data-raw-content'));
+
+          
         } else {
             // If no structured format detected, initialize data-raw-content
             const structuredContent = `default: ${rawContent};`; // Default to the raw content
