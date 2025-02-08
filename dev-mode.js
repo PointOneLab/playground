@@ -78,7 +78,7 @@ const DevModeManager = {
         document.querySelectorAll('.pow-item').forEach(item => {
             const draggable = item._draggable;
             if (!draggable) return;
-    
+
             const collectionType = this.getItemCollectionType(item);
             
             draggable.addEventListener('dragend', () => {
@@ -87,72 +87,35 @@ const DevModeManager = {
                 const contextId = document.body.getAttribute('pow-database-id');
                 const pageIdentifier = `${contextCollection}/${contextId}`;
                 
-                // Get current position and order values first
-                const positionElement = item.querySelector('.pow-itemposition');
+                // Get current position and order values
+                const positionElement = item.querySelector('.pow-item-position');
                 const orderElement = item.querySelector('.pow-item-order');
-    
-                // Now we can log position data
-                console.log('Dragend start - Position data:', {
-                    element: positionElement,
-                    originalFormat: positionElement?.dataset.originalFormat,
-                    currentText: positionElement?.innerText
-                });
                 
-                console.log('Dragend triggered - Elements found:', {
-                    positionElement: {
-                        exists: !!positionElement,
-                        originalFormat: positionElement?.dataset.originalFormat,
-                        currentText: positionElement?.innerText
-                    },
-                    orderElement: {
-                        exists: !!orderElement,
-                        originalFormat: orderElement?.dataset.originalFormat,
-                        currentText: orderElement?.innerText
-                    }
-                });
-            
-                // Parse from original format stored in dataset
-                const originalPositionFormat = positionElement?.dataset.originalFormat || '';
-                const originalOrderFormat = orderElement?.dataset.originalFormat || '';
-            
-                console.log('Original formats:', {
-                    position: originalPositionFormat,
-                    order: originalOrderFormat
-                });
-            
-                // Parse existing values from original format
-                const existingPosition = this.parsePositionOrderFormat(originalPositionFormat);
-                const existingOrder = this.parsePositionOrderFormat(originalOrderFormat);
+                // Parse existing values
+                const existingPosition = this.parsePositionOrderFormat(positionElement?.innerText || '');
+                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
                 
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
                 
-                console.log('Update values:', {
-                    existingPosition,
-                    newPosition,
-                    existingOrder,
-                    newOrder,
-                    pageIdentifier
-                });
-            
-                // Only update current page values
-                const updatedPosition = { ...existingPosition };
-                const updatedOrder = { ...existingOrder };
+                // Update values for current page
+                existingPosition[pageIdentifier] = newPosition;
+                existingOrder[pageIdentifier] = newOrder;
                 
-                updatedPosition[pageIdentifier] = newPosition;
-                updatedOrder[pageIdentifier] = newOrder;
-                
-                console.log('Final values:', {
-                    updatedPosition,
-                    updatedOrder
-                });
+                // Ensure default values exist
+                if (!('default' in existingPosition)) {
+                    existingPosition['default'] = newPosition;
+                }
+                if (!('default' in existingOrder)) {
+                    existingOrder['default'] = newOrder;
+                }
                 
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,
-                    position: this.stringifyPositionOrderFormat(updatedPosition),
-                    order: this.stringifyPositionOrderFormat(updatedOrder),
+                    position: this.stringifyPositionOrderFormat(existingPosition),
+                    order: this.stringifyPositionOrderFormat(existingOrder),
                     collectionType
                 });
                 
