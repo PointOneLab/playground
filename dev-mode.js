@@ -75,9 +75,6 @@ const DevModeManager = {
     },
 
     initDraggableTracking(devKey) {
-        // Store reference to 'this' for use inside callbacks
-        const self = this;
-        
         document.querySelectorAll('.pow-item').forEach(item => {
             const draggable = item._draggable;
             if (!draggable) return;
@@ -85,20 +82,19 @@ const DevModeManager = {
             const positionElement = item.querySelector('.pow-item-position');
             const orderElement = item.querySelector('.pow-item-order');
             
-            // Get original data from the raw content
+            // Get original data from stored attributes
             const originalPositionData = positionElement?.innerText || '';
             const originalOrderData = orderElement?.innerText || '';
             
-            // Parse the original data using self instead of this
-            const originalPosition = self.parsePositionOrderFormat(originalPositionData);
-            const originalOrder = self.parsePositionOrderFormat(originalOrderData);
+            // Parse the original data
+            const originalPosition = this.parsePositionOrderFormat(originalPositionData);
+            const originalOrder = this.parsePositionOrderFormat(originalOrderData);
             
             // Store original data on the item element for reference
             item.originalPosition = originalPosition;
             item.originalOrder = originalOrder;
     
-            // Use self instead of this
-            const collectionType = self.getItemCollectionType(item);
+            const collectionType = this.getItemCollectionType(item);
             
             draggable.addEventListener('dragend', () => {
                 const itemId = item.getAttribute('data-item-id');
@@ -128,13 +124,12 @@ const DevModeManager = {
                 // Store changes while preserving all original data
                 window.positionChanges.set(itemId, {
                     itemId,
-                    position: self.stringifyPositionOrderFormat(newPosition),
-                    order: self.stringifyPositionOrderFormat(newOrder),
+                    position: this.stringifyPositionOrderFormat(newPosition),
+                    order: this.stringifyPositionOrderFormat(newOrder),
                     collectionType
                 });
                 
-                // Use self instead of this
-                self.updateChangeCount();
+                this.updateChangeCount();
             });
         });
     }
