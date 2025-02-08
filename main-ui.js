@@ -273,97 +273,51 @@ document.addEventListener("DOMContentLoaded", function() {
   
     // Position items based on their defined coordinates or predefined names
     function positionExistingItems() {
-        const contextCollection = document.body.getAttribute('pow-database-collection');
-        const contextId = document.body.getAttribute('pow-database-id');
-        const pageIdentifier = `${contextCollection}/${contextId}`;
-        
-        console.log('Page context:', { contextCollection, contextId, pageIdentifier });
-    
         document.querySelectorAll('.pow-item').forEach(item => {
             const positionElement = item.querySelector('.pow-itemposition');
+            if (!positionElement) return;
+    
+            const positionText = positionElement.innerText.trim();
             const coordinatesElement = item.querySelector('.pow-item-coordinates');
             
-            if (!positionElement) return;
-            
-            const rawContent = positionElement.innerText.trim();
-            console.log('Raw position content:', rawContent);
-    
-            let [x, y] = [50, 50]; // Default position
-            
-            if (rawContent) {
-                try {
-                    // Handle JSON-like format
-                    if (rawContent.includes(':') && rawContent.includes(';')) {
-                        const entries = rawContent.split(';').map(entry => entry.trim());
-                        const positionMap = {};
-                        
-                        entries.forEach(entry => {
-                            if (!entry) return;
-                            const [key, value] = entry.split(':').map(part => part.trim().replace(/"/g, ''));
-                            if (key && value) {
-                                positionMap[key] = value;
-                            }
-                        });
-                        
-                        // Get position for current page or fall back to default
-                        const pagePosition = positionMap[pageIdentifier] || positionMap["default"];
-                        if (pagePosition) {
-                            [x, y] = pagePosition.split(',').map(Number);
-                        }
-                    } else if (predefinedLocations[rawContent]) {
-                        [x, y] = predefinedLocations[rawContent].split(',').map(Number);
-                    } else if (rawContent.startsWith('~(') && rawContent.endsWith(')')) {
-                        const value = rawContent.slice(2, -1).trim();
-                        if (predefinedLocations[value]) {
-                            [x, y] = predefinedLocations[value].split(',').map(Number);
-                        } else {
-                            [x, y] = value.split(',').map(Number);
-                        }
-                        x += (Math.random() - 0.5) * 10;
-                        y += (Math.random() - 0.5) * 10;
-                    } else if (rawContent === 'random') {
-                        x = 10 + Math.random() * 80;
-                        y = 10 + Math.random() * 80;
-                    } else {
-                        [x, y] = rawContent.split(',').map(Number);
-                    }
-                } catch (error) {
-                    console.error('Error parsing position:', error);
+            let [x, y] = [0, 0];
+            if (predefinedLocations[positionText]) {
+                [x, y] = predefinedLocations[positionText].split(',').map(Number);
+            } else if (positionText.startsWith('~(') && positionText.endsWith(')')) {
+                const value = positionText.slice(2, -1).trim();
+                if (predefinedLocations[value]) {
+                    [x, y] = predefinedLocations[value].split(',').map(Number);
+                } else {
+                    [x, y] = value.split(',').map(Number);
                 }
+                x += (Math.random() - 0.5) * 10;
+                y += (Math.random() - 0.5) * 10;
+            } else if (positionText === 'random') {
+                x = 10 + Math.random() * 80;
+                y = 10 + Math.random() * 80;
+            } else {
+                [x, y] = positionText.split(',').map(Number);
             }
     
-            // Format coordinates with 4 decimal places
-            const formattedX = x.toFixed(4);
-            const formattedY = y.toFixed(4);
-            const formattedPosition = `${formattedX},${formattedY}`;
+            // Store positions immediately
+            item.dataset.leftPercent = x.toFixed(4);
+            item.dataset.topPercent = y.toFixed(4);
     
-            // Update both elements with the same formatted position
+            // Update both displays with formatted values
+            const formattedPosition = `${x.toFixed(4)},${y.toFixed(4)}`;
             positionElement.textContent = formattedPosition;
             if (coordinatesElement) {
                 coordinatesElement.textContent = formattedPosition;
             }
     
-            // Store positions in dataset
-            item.dataset.leftPercent = formattedX;
-            item.dataset.topPercent = formattedY;
-    
-            console.log('Positioning item:', {
-                itemId: item.getAttribute('data-item-id'),
-                position: formattedPosition,
-                elements: {
-                    position: positionElement.textContent,
-                    coordinates: coordinatesElement?.textContent
-                }
-            });
-    
-            // Position the item
+            // Do initial positioning immediately for visibility
             const boardRect = board.getBoundingClientRect();
             const initialLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
             const initialTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
             item.style.left = `${initialLeftPx}px`;
             item.style.top = `${initialTopPx}px`;
             
-            // Handle media loading adjustments
+            // Then handle precise positioning with media loading
             const imageElement = item.querySelector('.pow-visual');
             const videoElement = item.querySelector('.pow-video-embed');
     
