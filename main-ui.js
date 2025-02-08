@@ -193,22 +193,38 @@ document.addEventListener("DOMContentLoaded", function() {
   
     // Function to calculate and store the left and top position of each item as a percentage of the board
     function storeItemPositionAsPercentage(item) {
-      const boardRect = board.getBoundingClientRect();
-      const itemRect = item.getBoundingClientRect();
-  
-      const leftPercent = (((itemRect.left - boardRect.left) + itemRect.width / 2) / boardRect.width) * 100;
-      const topPercent = (((itemRect.top - boardRect.top) + itemRect.height / 2) / boardRect.height) * 100;
-  
-      item.dataset.leftPercent = leftPercent;
-      item.dataset.topPercent = topPercent;
-      
-          // Update coordinates display only for existing items (with pow-item-coordinates)
-      const coordsDisplay = item.querySelector('.pow-item-coordinates');
-      if (coordsDisplay) {
-          coordsDisplay.textContent = `${leftPercent.toFixed(2)},${topPercent.toFixed(2)}`;
-      }
-      
-      console.log(`Stored position for item: left ${leftPercent}%, top ${topPercent}%`);
+        const boardRect = board.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
+    
+        // Calculate center position
+        const leftPercent = (((itemRect.left - boardRect.left) + itemRect.width / 2) / boardRect.width) * 100;
+        const topPercent = (((itemRect.top - boardRect.top) + itemRect.height / 2) / boardRect.height) * 100;
+    
+        // Format with 4 decimal places
+        const formattedLeft = leftPercent.toFixed(4);
+        const formattedTop = topPercent.toFixed(4);
+        const formattedPosition = `${formattedLeft},${formattedTop}`;
+    
+        // Store values
+        item.dataset.leftPercent = formattedLeft;
+        item.dataset.topPercent = formattedTop;
+        
+        // Update both position and coordinates displays
+        const positionElement = item.querySelector('.pow-itemposition');
+        const coordsDisplay = item.querySelector('.pow-item-coordinates');
+        
+        if (positionElement) {
+            positionElement.textContent = formattedPosition;
+        }
+        if (coordsDisplay) {
+            coordsDisplay.textContent = formattedPosition;
+        }
+        
+        console.log('Stored position:', {
+            itemId: item.getAttribute('data-item-id'),
+            position: formattedPosition,
+            raw: { leftPercent, topPercent }
+        });
     }
   
     
