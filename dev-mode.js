@@ -82,6 +82,12 @@ const DevModeManager = {
             const collectionType = this.getItemCollectionType(item);
             
             draggable.addEventListener('dragend', () => {
+
+                console.log('Dragend start - Position data:', {
+                    element: positionElement,
+                    originalFormat: positionElement?.dataset.originalFormat,
+                    currentText: positionElement?.innerText
+                });
                 const itemId = item.getAttribute('data-item-id');
                 const contextCollection = document.body.getAttribute('pow-database-collection');
                 const contextId = document.body.getAttribute('pow-database-id');

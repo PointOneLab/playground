@@ -33,24 +33,34 @@ document.addEventListener("DOMContentLoaded", function () {
   
         // Process JSON-like format
         if (rawContent.includes(':') && rawContent.includes(';')) {
-          const cleanedContent = rawContent.replace(/^"|"$/g, '').trim();
-          const entries = cleanedContent.split(';').map(entry => entry.trim()).filter(entry => entry);
-          const dataMap = {};
-  
-          entries.forEach(entry => {
-            const [key, value] = entry.split(':').map(part => part.trim());
-            if (key && value) {
-              dataMap[key.replace(/"/g, '')] = value.replace(/"/g, '');
+            const cleanedContent = rawContent.replace(/^"|"$/g, '').trim();
+            const entries = cleanedContent.split(';').map(entry => entry.trim()).filter(entry => entry);
+            const dataMap = {};
+        
+            entries.forEach(entry => {
+                const [key, value] = entry.split(':').map(part => part.trim());
+                if (key && value) {
+                    dataMap[key.replace(/"/g, '')] = value.replace(/"/g, '');
+                }
+            });
+        
+            console.log('Parsed data map:', dataMap);
+        
+            const resolvedKey = `${contextCollection}/${contextId}`;
+            const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
+        
+            // Store the full format before updating display
+            if (element.classList.contains('pow-itemposition') || element.classList.contains('pow-item-order')) {
+                element.dataset.originalFormat = rawContent;
+                console.log('Storing full format:', {
+                    element: element.className,
+                    originalFormat: rawContent,
+                    displayValue: resolvedValue
+                });
             }
-          });
-  
-          console.log('Parsed data map:', dataMap);
-  
-          const resolvedKey = `${contextCollection}/${contextId}`;
-          const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
-  
-          // Only update innerText, keeping original format in dataset
-          element.innerText = resolvedValue;
+        
+            // Update display with resolved value
+            element.innerText = resolvedValue;
         }
       } catch (error) {
         console.error("Error processing element:", error);
