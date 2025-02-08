@@ -58,90 +58,29 @@ const DevModeManager = {
     },
   
     initDraggableTracking(devKey) {
-        document.querySelectorAll('.pow-item').forEach(item => {
-          const draggable = item._draggable;
-          if (!draggable) return;
+      document.querySelectorAll('.pow-item').forEach(item => {
+        const draggable = item._draggable;
+        if (!draggable) return;
   
-          const positionElement = item.querySelector('.pow-itemposition');
-          const coordinatesElement = item.querySelector('.pow-item-coordinates');
-          const collectionType = this.getItemCollectionType(item);
+        // Get collection type from class or data attribute
+        const collectionType = this.getItemCollectionType(item);
+        
+        draggable.addEventListener('dragend', () => {
+          const itemId = item.getAttribute('data-item-id');
+          const position = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
           
-          console.log('Initial state:', {
-            itemId: item.getAttribute('data-item-id'),
-            positionText: positionElement?.textContent,
-            coordinatesText: coordinatesElement?.textContent,
-            dataset: {
-              left: item.dataset.leftPercent,
-              top: item.dataset.topPercent
-            }
+          // Store change
+          window.positionChanges.set(itemId, {
+            itemId,
+            position,
+            collectionType
           });
           
-          draggable.addEventListener('drag', () => {
-            const boardRect = document.querySelector('.pow-board').getBoundingClientRect();
-            const itemRect = item.getBoundingClientRect();
-            
-            // Log raw calculations
-            console.log('Calculation values:', {
-              boardRect: {
-                left: boardRect.left,
-                top: boardRect.top,
-                width: boardRect.width,
-                height: boardRect.height
-              },
-              itemRect: {
-                left: itemRect.left,
-                top: itemRect.top,
-                width: itemRect.width,
-                height: itemRect.height
-              }
-            });
-            
-            const leftPercent = ((itemRect.left - boardRect.left + itemRect.width / 2) / boardRect.width * 100);
-            const topPercent = ((itemRect.top - boardRect.top + itemRect.height / 2) / boardRect.height * 100);
-            
-            const roundedLeft = parseFloat(leftPercent).toFixed(4);
-            const roundedTop = parseFloat(topPercent).toFixed(4);
-            
-            // Update both elements with the same value
-            const positionText = `${roundedLeft},${roundedTop}`;
-            
-            if (positionElement) {
-                positionElement.textContent = positionText;
-            }
-            if (coordinatesElement) {
-                coordinatesElement.textContent = positionText;
-            }
-            
-            // Store values
-            item.dataset.leftPercent = roundedLeft;
-            item.dataset.topPercent = roundedTop;
-            
-            console.log('Updated position:', {
-              raw: { leftPercent, topPercent },
-              rounded: { roundedLeft, roundedTop },
-              elements: {
-                position: positionElement?.textContent,
-                coordinates: coordinatesElement?.textContent
-              }
-            });
-          });
-  
-          draggable.addEventListener('dragend', () => {
-            const itemId = item.getAttribute('data-item-id');
-            const position = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
-            
-            // Store change
-            window.positionChanges.set(itemId, {
-              itemId,
-              position,
-              collectionType
-            });
-            
-            // Update change count
-            this.updateChangeCount();
-          });
+          // Update change count
+          this.updateChangeCount();
         });
-      },
+      });
+    },
   
     getItemCollectionType(item) {
       if (item.closest('#images-collection')) return 'images';

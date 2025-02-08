@@ -193,28 +193,22 @@ document.addEventListener("DOMContentLoaded", function() {
   
     // Function to calculate and store the left and top position of each item as a percentage of the board
     function storeItemPositionAsPercentage(item) {
-        const boardRect = board.getBoundingClientRect();
-        const itemRect = item.getBoundingClientRect();
-    
-        const leftPercent = (((itemRect.left - boardRect.left) + itemRect.width / 2) / boardRect.width) * 100;
-        const topPercent = (((itemRect.top - boardRect.top) + itemRect.height / 2) / boardRect.height) * 100;
-    
-        // Store original values without formatting
-        item.dataset.leftPercent = leftPercent;
-        item.dataset.topPercent = topPercent;
-        
-        // Update both displays with formatted values
-        const positionElement = item.querySelector('.pow-itemposition');
-        const coordsDisplay = item.querySelector('.pow-item-coordinates');
-        
-        if (coordsDisplay) {
-            coordsDisplay.textContent = `${leftPercent.toFixed(4)},${topPercent.toFixed(4)}`;
-        }
-        if (positionElement) {
-            positionElement.textContent = `${leftPercent.toFixed(4)},${topPercent.toFixed(4)}`;
-        }
-        
-        console.log(`Stored position for item: left ${leftPercent}%, top ${topPercent}%`);
+      const boardRect = board.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
+  
+      const leftPercent = (((itemRect.left - boardRect.left) + itemRect.width / 2) / boardRect.width) * 100;
+      const topPercent = (((itemRect.top - boardRect.top) + itemRect.height / 2) / boardRect.height) * 100;
+  
+      item.dataset.leftPercent = leftPercent;
+      item.dataset.topPercent = topPercent;
+      
+          // Update coordinates display only for existing items (with pow-item-coordinates)
+      const coordsDisplay = item.querySelector('.pow-item-coordinates');
+      if (coordsDisplay) {
+          coordsDisplay.textContent = `${leftPercent.toFixed(2)},${topPercent.toFixed(2)}`;
+      }
+      
+      console.log(`Stored position for item: left ${leftPercent}%, top ${topPercent}%`);
     }
   
     
@@ -262,168 +256,125 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   
     // Position items based on their defined coordinates or predefined names
-    function positionExistingItems() {
-        const contextCollection = document.body.getAttribute('pow-database-collection');
-        const contextId = document.body.getAttribute('pow-database-id');
-        const pageIdentifier = `${contextCollection}/${contextId}`;
-    
-        document.querySelectorAll('.pow-item').forEach(item => {
-            const positionElement = item.querySelector('.pow-itemposition');
-            const coordinatesElement = item.querySelector('.pow-item-coordinates');
-            const positionText = positionElement?.innerText.trim();
-            if (!positionText) return;
-    
-            let [x, y] = [0, 0];
-            
-            // Handle JSON-like format first
-            if (positionText.includes(':') && positionText.includes(';')) {
-                const entries = positionText.split(';').map(entry => entry.trim());
-                const positionMap = {};
-                
-                entries.forEach(entry => {
-                    if (!entry) return;
-                    const [key, value] = entry.split(':').map(part => part.trim().replace(/"/g, ''));
-                    if (key && value) {
-                        positionMap[key] = value;
-                    }
-                });
-                
-                // Get position for current page or fall back to default
-                const pagePosition = positionMap[pageIdentifier] || positionMap["default"];
-                if (pagePosition) {
-                    [x, y] = pagePosition.split(',').map(Number);
-                }
-            } else if (predefinedLocations[positionText]) {
-                [x, y] = predefinedLocations[positionText].split(',').map(Number);
-            } else if (positionText.startsWith('~(') && positionText.endsWith(')')) {
-                const value = positionText.slice(2, -1).trim();
-                if (predefinedLocations[value]) {
-                    [x, y] = predefinedLocations[value].split(',').map(Number);
-                } else {
-                    [x, y] = value.split(',').map(Number);
-                }
-                x += (Math.random() - 0.5) * 10;
-                y += (Math.random() - 0.5) * 10;
-            } else if (positionText === 'random') {
-                x = 10 + Math.random() * 80;
-                y = 10 + Math.random() * 80;
-            } else {
-                [x, y] = positionText.split(',').map(Number);
-            }
-    
-            // Format position with 4 decimal places
-            const formattedX = x.toFixed(4);
-            const formattedY = y.toFixed(4);
-            
-            // Store positions immediately
-            item.dataset.leftPercent = formattedX;
-            item.dataset.topPercent = formattedY;
-    
-            // Update both displays
-            const formattedPosition = `${formattedX},${formattedY}`;
-            if (positionElement) {
-                positionElement.textContent = formattedPosition;
-            }
-            if (coordinatesElement) {
-                coordinatesElement.textContent = formattedPosition;
-            }
-    
-            // Do initial positioning immediately for visibility
-            const boardRect = board.getBoundingClientRect();
-            const initialLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
-            const initialTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
-            item.style.left = `${initialLeftPx}px`;
-            item.style.top = `${initialTopPx}px`;
-            
-            // Then handle precise positioning with media loading
-            const imageElement = item.querySelector('.pow-visual');
-            const videoElement = item.querySelector('.pow-video-embed');
-    
-            if (imageElement) {
-                const adjustImagePosition = () => {
-                    requestAnimationFrame(() => {
-                        const updatedBoardRect = board.getBoundingClientRect();
-                        const finalLeftPx = (x / 100) * updatedBoardRect.width - (imageElement.offsetWidth / 2);
-                        const finalTopPx = (y / 100) * updatedBoardRect.height - (imageElement.offsetHeight / 2);
-                        item.style.left = `${finalLeftPx}px`;
-                        item.style.top = `${finalTopPx}px`;
-                    });
-                };
-    
-                if (imageElement.complete) {
-                    adjustImagePosition();
-                } else {
-                    imageElement.addEventListener('load', adjustImagePosition);
-                }
-            } else if (videoElement) {
-                const adjustVideoPosition = () => {
-                    requestAnimationFrame(() => {
-                        const updatedBoardRect = board.getBoundingClientRect();
-                        const finalLeftPx = (x / 100) * updatedBoardRect.width - (videoElement.offsetWidth / 2);
-                        const finalTopPx = (y / 100) * updatedBoardRect.height - (videoElement.offsetHeight / 2);
-                        item.style.left = `${finalLeftPx}px`;
-                        item.style.top = `${finalTopPx}px`;
-                    });
-                };
-    
-                if (videoElement.readyState >= 1) {
-                    adjustVideoPosition();
-                } else {
-                    videoElement.addEventListener('loadedmetadata', adjustVideoPosition);
-                }
-            }
-        });
-    }
+  function positionExistingItems() {
+      document.querySelectorAll('.pow-item').forEach(item => {
+          const positionText = item.querySelector('.pow-itemposition')?.innerText.trim();
+          if (!positionText) return;
   
-    function positionItemWithLoadedDimensions(item, x, y, mediaElement = null) {
-        const boardRect = board.getBoundingClientRect();
-        let elementForDimensions;
-        
-        if (mediaElement) {
-            // For media elements (images or videos), use their direct dimensions
-            elementForDimensions = mediaElement;
-        } else {
-            // For other items, use the item's dimensions
-            elementForDimensions = item;
-        }
-    
-        // Get precise measurements
-        const rect = elementForDimensions.getBoundingClientRect();
-        
-        // Calculate center position with precise decimal values
-        const newLeftPx = Math.round(((x / 100) * boardRect.width) - (rect.width / 2));
-        const newTopPx = Math.round(((y / 100) * boardRect.height) - (rect.height / 2));
-    
-        // Apply position
-        item.style.left = `${newLeftPx}px`;
-        item.style.top = `${newTopPx}px`;
-    
-        // Update both displays
-        const positionElement = item.querySelector('.pow-itemposition');
-        const coordsDisplay = item.querySelector('.pow-item-coordinates');
-        
-        if (coordsDisplay) {
-            coordsDisplay.textContent = `${x.toFixed(4)},${y.toFixed(4)}`;
-        }
-        if (positionElement) {
-            positionElement.textContent = `${x.toFixed(4)},${y.toFixed(4)}`;
-        }
-    
-        // Debug logging
-        console.log('Positioning details:', {
-            type: mediaElement ? (mediaElement.tagName === 'VIDEO' ? 'video' : 'image') : 'other',
-            dimensions: {
-                width: rect.width,
-                height: rect.height
-            },
-            position: {
-                x,
-                y,
-                leftPx: newLeftPx,
-                topPx: newTopPx
-            }
-        });
-    }
+          let [x, y] = [0, 0];
+          if (predefinedLocations[positionText]) {
+              [x, y] = predefinedLocations[positionText].split(',').map(Number);
+          } else if (positionText.startsWith('~(') && positionText.endsWith(')')) {
+              const value = positionText.slice(2, -1).trim();
+              if (predefinedLocations[value]) {
+                  [x, y] = predefinedLocations[value].split(',').map(Number);
+              } else {
+                  [x, y] = value.split(',').map(Number);
+              }
+              x += (Math.random() - 0.5) * 10;
+              y += (Math.random() - 0.5) * 10;
+          } else if (positionText === 'random') {
+              x = 10 + Math.random() * 80;
+      y = 10 + Math.random() * 80;
+          } else {
+              [x, y] = positionText.split(',').map(Number);
+          }
+  
+          // Store positions immediately
+          item.dataset.leftPercent = x;
+          item.dataset.topPercent = y;
+  
+          // Do initial positioning immediately for visibility
+          const boardRect = board.getBoundingClientRect();
+          const initialLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
+          const initialTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
+          item.style.left = `${initialLeftPx}px`;
+          item.style.top = `${initialTopPx}px`;
+          
+          // Then handle precise positioning with media loading
+          const imageElement = item.querySelector('.pow-visual');
+          const videoElement = item.querySelector('.pow-video-embed');
+  
+          if (imageElement) {
+              const adjustImagePosition = () => {
+                  requestAnimationFrame(() => {
+                      const updatedBoardRect = board.getBoundingClientRect();
+                      const finalLeftPx = (x / 100) * updatedBoardRect.width - (imageElement.offsetWidth / 2);
+                      const finalTopPx = (y / 100) * updatedBoardRect.height - (imageElement.offsetHeight / 2);
+                      item.style.left = `${finalLeftPx}px`;
+                      item.style.top = `${finalTopPx}px`;
+                  });
+              };
+  
+              if (imageElement.complete) {
+                  adjustImagePosition();
+              } else {
+                  imageElement.addEventListener('load', adjustImagePosition);
+              }
+          } else if (videoElement) {
+              const adjustVideoPosition = () => {
+                  requestAnimationFrame(() => {
+                      const updatedBoardRect = board.getBoundingClientRect();
+                      const finalLeftPx = (x / 100) * updatedBoardRect.width - (videoElement.offsetWidth / 2);
+                      const finalTopPx = (y / 100) * updatedBoardRect.height - (videoElement.offsetHeight / 2);
+                      item.style.left = `${finalLeftPx}px`;
+                      item.style.top = `${finalTopPx}px`;
+                  });
+              };
+  
+              if (videoElement.readyState >= 1) {
+                  adjustVideoPosition();
+              } else {
+                  videoElement.addEventListener('loadedmetadata', adjustVideoPosition);
+              }
+          }
+      });
+  }
+  
+  function positionItemWithLoadedDimensions(item, x, y, mediaElement = null) {
+      const boardRect = board.getBoundingClientRect();
+      let elementForDimensions;
+      
+      if (mediaElement) {
+          // For media elements (images or videos), use their direct dimensions
+          elementForDimensions = mediaElement;
+      } else {
+          // For other items, use the item's dimensions
+          elementForDimensions = item;
+      }
+  
+      // Get precise measurements
+      const rect = elementForDimensions.getBoundingClientRect();
+      
+      // Calculate center position with precise decimal values
+      const newLeftPx = Math.round(((x / 100) * boardRect.width) - (rect.width / 2));
+      const newTopPx = Math.round(((y / 100) * boardRect.height) - (rect.height / 2));
+  
+      // Apply position
+      item.style.left = `${newLeftPx}px`;
+      item.style.top = `${newTopPx}px`;
+  
+      // Update coordinate display
+      const coordsDisplay = item.querySelector('.pow-item-coordinates');
+      if (coordsDisplay) {
+          coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
+      }
+  
+      // Debug logging
+      console.log('Positioning details:', {
+          type: mediaElement ? (mediaElement.tagName === 'VIDEO' ? 'video' : 'image') : 'other',
+          dimensions: {
+              width: rect.width,
+              height: rect.height
+          },
+          position: {
+              x,
+              y,
+              leftPx: newLeftPx,
+              topPx: newTopPx
+          }
+      });
+  }
     
     // Store the percentage positions for all existing items on load
     document.querySelectorAll('.pow-item').forEach(item => {
@@ -643,64 +594,55 @@ document.addEventListener("DOMContentLoaded", function() {
   
   
   
-    // Mess button functionality
-messButton.addEventListener("click", () => {
-    document.querySelectorAll('.pow-item').forEach(item => {
-        const x = 10 + Math.random() * 80;
-        const y = 10 + Math.random() * 80;
-        
-        const formattedX = x.toFixed(4);
-        const formattedY = y.toFixed(4);
-        const formattedPosition = `${formattedX},${formattedY}`;
-
-        item.dataset.leftPercent = formattedX;
-        item.dataset.topPercent = formattedY;
-
+    // Mess button functionality: reposition all items to a random location
+    messButton.addEventListener("click", () => {
+      document.querySelectorAll('.pow-item').forEach(item => {
+          const x = 10 + Math.random() * 80;
+          const y = 10 + Math.random() * 80;
+    
+        item.dataset.leftPercent = x;
+        item.dataset.topPercent = y;
+    
         const boardRect = board.getBoundingClientRect();
         const newLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
         const newTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
-
+    
         item.style.left = `${newLeftPx}px`;
         item.style.top = `${newTopPx}px`;
         
-        // Update both displays
-        const positionElement = item.querySelector('.pow-itemposition');
-        const coordsDisplay = item.querySelector('.pow-item-coordinates');
-        
-        if (positionElement) {
-            positionElement.textContent = formattedPosition;
-        }
-        if (coordsDisplay) {
-            coordsDisplay.textContent = formattedPosition;
-        }
+                // Update coordinates display
+          const coordsDisplay = item.querySelector('.pow-item-coordinates');
+          if (coordsDisplay) {
+              coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
+          }
+    
+        console.log(`Repositioned item to random location: left ${x}%, top ${y}%`);
+      });
     });
-});
-
-// Stack button functionality
-stackButton.addEventListener("click", () => {
-    document.querySelectorAll('.pow-item').forEach(item => {
-        const formattedPosition = "50.0000,50.0000";
-        
-        item.dataset.leftPercent = "50.0000";
-        item.dataset.topPercent = "50.0000";
-
+  
+    // Stack button functionality: position all items to the center of the board
+    stackButton.addEventListener("click", () => {
+      document.querySelectorAll('.pow-item').forEach(item => {
+        const x = 50;
+        const y = 50;
+    
+        item.dataset.leftPercent = x;
+        item.dataset.topPercent = y;
+    
         const boardRect = board.getBoundingClientRect();
-        const newLeftPx = (50 / 100) * boardRect.width - (item.offsetWidth / 2);
-        const newTopPx = (50 / 100) * boardRect.height - (item.offsetHeight / 2);
-
+        const newLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
+        const newTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
+    
         item.style.left = `${newLeftPx}px`;
         item.style.top = `${newTopPx}px`;
         
-        // Update both displays
-        const positionElement = item.querySelector('.pow-itemposition');
-        const coordsDisplay = item.querySelector('.pow-item-coordinates');
-        
-        if (positionElement) {
-            positionElement.textContent = formattedPosition;
-        }
-        if (coordsDisplay) {
-            coordsDisplay.textContent = formattedPosition;
-        }
+                // Update coordinates display
+          const coordsDisplay = item.querySelector('.pow-item-coordinates');
+          if (coordsDisplay) {
+              coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
+          }
+    
+        console.log(`Positioned item to center: left ${x}%, top ${y}%`);
+      });
     });
-});
   });
