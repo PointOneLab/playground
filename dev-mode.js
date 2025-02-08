@@ -91,43 +91,54 @@ const DevModeManager = {
                 const positionElement = item.querySelector('.pow-itemposition');
                 const orderElement = item.querySelector('.pow-item-order');
                 
-                console.log('Position element found:', {
-                    element: positionElement,
-                    text: positionElement?.innerText,
-                    rawHTML: positionElement?.innerHTML,
-                    originalFormat: positionElement?.dataset.originalFormat
+                console.log('Dragend triggered - Elements found:', {
+                    positionElement: {
+                        exists: !!positionElement,
+                        originalFormat: positionElement?.dataset.originalFormat,
+                        currentText: positionElement?.innerText
+                    },
+                    orderElement: {
+                        exists: !!orderElement,
+                        originalFormat: orderElement?.dataset.originalFormat,
+                        currentText: orderElement?.innerText
+                    }
                 });
-                
-                // Parse existing values from the original format stored in data attribute
-                const existingPosition = this.parsePositionOrderFormat(positionElement?.dataset.originalFormat || '');
-                const existingOrder = this.parsePositionOrderFormat(orderElement?.dataset.originalFormat || '');
+            
+                // Parse from original format stored in dataset
+                const originalPositionFormat = positionElement?.dataset.originalFormat || '';
+                const originalOrderFormat = orderElement?.dataset.originalFormat || '';
+            
+                console.log('Original formats:', {
+                    position: originalPositionFormat,
+                    order: originalOrderFormat
+                });
+            
+                // Parse existing values from original format
+                const existingPosition = this.parsePositionOrderFormat(originalPositionFormat);
+                const existingOrder = this.parsePositionOrderFormat(originalOrderFormat);
                 
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
                 
-                // Only update the current page value
+                console.log('Update values:', {
+                    existingPosition,
+                    newPosition,
+                    existingOrder,
+                    newOrder,
+                    pageIdentifier
+                });
+            
+                // Only update current page values
                 const updatedPosition = { ...existingPosition };
                 const updatedOrder = { ...existingOrder };
                 
                 updatedPosition[pageIdentifier] = newPosition;
                 updatedOrder[pageIdentifier] = newOrder;
                 
-                console.log('Before stringify:', {
-                    existingPosition,
+                console.log('Final values:', {
                     updatedPosition,
-                    stringified: this.stringifyPositionOrderFormat(updatedPosition)
-                });
-                
-                console.log('Values being saved:', {
-                    original: {
-                        position: existingPosition,
-                        order: existingOrder
-                    },
-                    updated: {
-                        position: updatedPosition,
-                        order: updatedOrder
-                    }
+                    updatedOrder
                 });
                 
                 // Store changes
