@@ -139,7 +139,7 @@ const DevModeManager = {
                 const pageIdentifier = `${contextCollection}/${contextId}`;
             
                 // Get current position and order values
-                const positionElement = item.querySelector('.pow-item-coordinates');
+                const positionElement = item.querySelector('.pow-itemposition');
                 const orderElement = item.querySelector('.pow-item-order');
             
                 // Step 1: Check data-raw-content
