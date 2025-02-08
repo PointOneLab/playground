@@ -202,8 +202,8 @@ document.addEventListener("DOMContentLoaded", function() {
       item.dataset.leftPercent = leftPercent;
       item.dataset.topPercent = topPercent;
       
-          // Update coordinates display only for existing items (with pow-itemposition)
-      const coordsDisplay = item.querySelector('.pow-itemposition');
+          // Update coordinates display only for existing items (with pow-item-coordinates)
+      const coordsDisplay = item.querySelector('.pow-item-coordinates');
       if (coordsDisplay) {
           coordsDisplay.textContent = `${leftPercent.toFixed(2)},${topPercent.toFixed(2)}`;
       }
@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", function() {
       item.style.top = `${newTopPx}px`;
   
       // Update coordinate display
-      const coordsDisplay = item.querySelector('.pow-itemposition');
+      const coordsDisplay = item.querySelector('.pow-item-coordinates');
       if (coordsDisplay) {
           coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
       }
