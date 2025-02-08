@@ -18,14 +18,14 @@ const DevModeManager = {
             }
         });
         return result;
-    }
+    },
 
     stringifyPositionOrderFormat(obj) {
         console.log(`[stringifyPositionOrderFormat] Input object:`, obj); // Add this line
         return Object.entries(obj)
             .map(([key, value]) => `"${key}": "${value}"`)
             .join('; ');
-    }
+    },
 
     init() {
         const hash = window.location.hash;
