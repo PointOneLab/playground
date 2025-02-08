@@ -89,6 +89,11 @@ const DevModeManager = {
                 
                 // Get current position and order values
                 const positionElement = item.querySelector('.pow-itemposition');
+                console.log('Position element found:', {
+                    element: positionElement,
+                    text: positionElement?.innerText,
+                    rawHTML: positionElement?.innerHTML
+                });
                 const orderElement = item.querySelector('.pow-item-order');
                 
                 // Keep track of original text to preserve format
