@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", function() {
       item.style.top = `${newTopPx}px`;
   
       // Update coordinate display
-      const coordsDisplay = item.querySelector('.pow-item-coordinates');
+      const coordsDisplay = item.querySelector('.pow-itemposition');
       if (coordsDisplay) {
           coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
       }
