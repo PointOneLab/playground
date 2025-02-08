@@ -113,14 +113,6 @@ const DevModeManager = {
                 newPosition[pageIdentifier] = currentPosition;
                 newOrder[pageIdentifier] = currentOrder;
                 
-                // Ensure default values exist if they don't
-                if (!('default' in newPosition)) {
-                    newPosition['default'] = currentPosition;
-                }
-                if (!('default' in newOrder)) {
-                    newOrder['default'] = currentOrder;
-                }
-                
                 // Store changes while preserving all original data
                 window.positionChanges.set(itemId, {
                     itemId,
