@@ -58,29 +58,47 @@ const DevModeManager = {
     },
   
     initDraggableTracking(devKey) {
-      document.querySelectorAll('.pow-item').forEach(item => {
-        const draggable = item._draggable;
-        if (!draggable) return;
+        document.querySelectorAll('.pow-item').forEach(item => {
+          const draggable = item._draggable;
+          if (!draggable) return;
   
-        // Get collection type from class or data attribute
-        const collectionType = this.getItemCollectionType(item);
-        
-        draggable.addEventListener('dragend', () => {
-          const itemId = item.getAttribute('data-item-id');
-          const position = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
+          const positionElement = item.querySelector('.pow-itemposition');
+          const collectionType = this.getItemCollectionType(item);
           
-          // Store change
-          window.positionChanges.set(itemId, {
-            itemId,
-            position,
-            collectionType
+          // Real-time position update during drag
+          draggable.addEventListener('drag', function() {
+            const boardRect = document.querySelector('.pow-board').getBoundingClientRect();
+            const itemRect = item.getBoundingClientRect();
+            
+            const leftPercent = ((itemRect.left - boardRect.left + itemRect.width / 2) / boardRect.width * 100);
+            const topPercent = ((itemRect.top - boardRect.top + itemRect.height / 2) / boardRect.height * 100);
+            
+            // Store rounded values
+            item.dataset.leftPercent = leftPercent.toFixed(4);
+            item.dataset.topPercent = topPercent.toFixed(4);
+            
+            // Update position display in real-time
+            if (positionElement) {
+                positionElement.textContent = `${leftPercent.toFixed(4)},${topPercent.toFixed(4)}`;
+            }
           });
-          
-          // Update change count
-          this.updateChangeCount();
+  
+          draggable.addEventListener('dragend', () => {
+            const itemId = item.getAttribute('data-item-id');
+            const position = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
+            
+            // Store change
+            window.positionChanges.set(itemId, {
+              itemId,
+              position,
+              collectionType
+            });
+            
+            // Update change count
+            this.updateChangeCount();
+          });
         });
-      });
-    },
+      },
   
     getItemCollectionType(item) {
       if (item.closest('#images-collection')) return 'images';
