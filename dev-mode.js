@@ -1,47 +1,29 @@
 // Dev Mode Manager
 const DevModeManager = {
     parsePositionOrderFormat(value) {
-        if (!value || typeof value !== 'string') {
+        if (!value || !value.includes(':') || !value.includes(';')) {
             return {};
         }
         
-        console.log('Parsing value:', value);  // Debug log
-        
+        const entries = value.split(';').map(entry => entry.trim()).filter(entry => entry);
         const result = {};
-        // Split by semicolon and handle each entry
-        const entries = value.split(';').map(entry => entry.trim()).filter(Boolean);
         
         entries.forEach(entry => {
-            // Find the position of the first colon
-            const colonIndex = entry.indexOf(':');
-            if (colonIndex === -1) return;
-            
-            // Split into key and value, preserving any colons in the value part
-            const key = entry.substring(0, colonIndex).trim().replace(/^["']|["']$/g, '');
-            const value = entry.substring(colonIndex + 1).trim().replace(/^["']|["']$/g, '');
-            
+            const [key, value] = entry.split(':').map(part => part.trim());
             if (key && value) {
-                result[key] = value;
+                const cleanKey = key.replace(/^["']|["']$/g, '');
+                const cleanValue = value.replace(/^["']|["']$/g, '');
+                result[cleanKey] = cleanValue;
             }
         });
         
-        console.log('Parsed result:', result);  // Debug log
         return result;
     },
-    
+
     stringifyPositionOrderFormat(data) {
-        if (!data || typeof data !== 'object') {
-            return '';
-        }
-        
-        console.log('Stringifying data:', data);  // Debug log
-        
-        const entries = Object.entries(data)
+        return Object.entries(data)
             .map(([key, value]) => `"${key}": "${value}"`)
             .join('; ');
-        
-        console.log('Stringified result:', entries);  // Debug log
-        return entries;
     },
 
     init() {
