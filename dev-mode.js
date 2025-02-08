@@ -21,11 +21,11 @@ const DevModeManager = {
     }
 
     stringifyPositionOrderFormat(data) {
+        console.log(`[stringifyPositionOrderFormat] Input object:`, obj);
         return Object.entries(data)
             .map(([key, value]) => `"${key}": "${value}"`)
             .join('; ');
 
-            console.log(`[stringifyPositionOrderFormat] Input object:`, obj);
     },
 
     init() {
