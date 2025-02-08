@@ -202,8 +202,8 @@ document.addEventListener("DOMContentLoaded", function() {
       item.dataset.leftPercent = leftPercent;
       item.dataset.topPercent = topPercent;
       
-          // Update coordinates display only for existing items (with pow-item-coordinates)
-      const coordsDisplay = item.querySelector('.pow-item-coordinates');
+          // Update coordinates display only for existing items (with pow-itemposition)
+      const coordsDisplay = item.querySelector('.pow-itemposition');
       if (coordsDisplay) {
           coordsDisplay.textContent = `${leftPercent.toFixed(2)},${topPercent.toFixed(2)}`;
       }
