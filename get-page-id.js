@@ -37,8 +37,11 @@ document.addEventListener("DOMContentLoaded", function () {
           // Render the resolved content
           element.innerText = resolvedValue;
         } else {
-          // Use the entire content as the default if no structured format is detected
-          element.innerText = rawContent;
+            // If no structured format detected, initialize data-raw-content
+            const structuredContent = `default: ${rawContent};`; // Default to the raw content
+            element.setAttribute('data-raw-content', structuredContent);
+            console.log(`[DOMContentLoaded] Initialized structured content:`, structuredContent);
+            element.innerText = rawContent;
         }
       } catch (error) {
         console.error("Error processing content for element with pow-database-field:", error);
