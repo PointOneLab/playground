@@ -104,10 +104,12 @@ const DevModeManager = {
                 
                 // Update values for current page
                 existingPosition[pageIdentifier] = newPosition;
+                console.log(`[dragend] Updated existingPosition object (after adding new position):`, existingPosition);
                 existingOrder[pageIdentifier] = newOrder;
                 
                 
                 positionElement.setAttribute('data-raw-content', this.stringifyPositionOrderFormat(existingPosition));
+                console.log(`[dragend] Updated data-raw-content attribute:`, positionElement.getAttribute('data-raw-content'));
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,
@@ -140,6 +142,7 @@ const DevModeManager = {
 
     async saveChanges() {
         const changes = Array.from(window.positionChanges.values());
+        console.log(`[saveChanges] Changes being sent to API:`, changes);
         if (changes.length === 0) return;
 
         const saveButton = document.getElementById('saveChanges');
