@@ -1,48 +1,59 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Get the page context: collection and ID from the <body> tag
     const contextCollection = document.body.getAttribute('pow-database-collection');
     const contextId = document.body.getAttribute('pow-database-id');
+    const pageIdentifier = `${contextCollection}/${contextId}`;
+  
+    console.log('Initial DOM Content Load:', { contextCollection, contextId, pageIdentifier });
   
     if (!contextCollection || !contextId) {
-      console.error("Page context attributes (pow-database-collection or pow-database-id) are missing or invalid.");
+      console.error("Page context attributes missing or invalid");
       return;
     }
   
-    // Select all elements with the attribute pow-database-field
-    const dataElements = document.querySelectorAll('[pow-database-field]');
+    // Select both database fields and position/order elements
+    const allElements = document.querySelectorAll('[pow-database-field], .pow-itemposition, .pow-item-order');
   
-    dataElements.forEach((element) => {
+    allElements.forEach((element) => {
       try {
-        // Get the raw content from the RichTextBlock or plain text
         const rawContent = element.innerText.trim();
+        console.log('Processing element:', {
+          element,
+          class: element.className,
+          rawContent
+        });
   
-        // Check if the content follows the structured format (contains ":" and ";")
+        // Store original format for position/order elements
+        if (element.classList.contains('pow-itemposition') || element.classList.contains('pow-item-order')) {
+          element.dataset.originalFormat = rawContent;
+          console.log('Stored original format:', {
+            element: element.className,
+            originalFormat: rawContent
+          });
+        }
+  
+        // Process JSON-like format
         if (rawContent.includes(':') && rawContent.includes(';')) {
-          // Process structured format
-          const cleanedContent = rawContent.replace(/^"|"$/g, '').trim(); // Remove leading/trailing quotes
-          const entries = cleanedContent.split(';').map(entry => entry.trim()).filter(entry => entry); // Split and clean entries
+          const cleanedContent = rawContent.replace(/^"|"$/g, '').trim();
+          const entries = cleanedContent.split(';').map(entry => entry.trim()).filter(entry => entry);
           const dataMap = {};
   
           entries.forEach(entry => {
             const [key, value] = entry.split(':').map(part => part.trim());
             if (key && value) {
-              dataMap[key.replace(/"/g, '')] = value.replace(/"/g, ''); // Remove quotes around keys and values
+              dataMap[key.replace(/"/g, '')] = value.replace(/"/g, '');
             }
           });
   
-          // Resolve the specific value based on the context
+          console.log('Parsed data map:', dataMap);
+  
           const resolvedKey = `${contextCollection}/${contextId}`;
           const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
   
-          // Render the resolved content
+          // Only update innerText, keeping original format in dataset
           element.innerText = resolvedValue;
-        } else {
-          // Use the entire content as the default if no structured format is detected
-          element.innerText = rawContent;
         }
       } catch (error) {
-        console.error("Error processing content for element with pow-database-field:", error);
-        element.innerText = "Error loading data.";
+        console.error("Error processing element:", error);
       }
     });
   });
