@@ -650,55 +650,64 @@ document.addEventListener("DOMContentLoaded", function() {
   
   
   
-    // Mess button functionality: reposition all items to a random location
-    messButton.addEventListener("click", () => {
-      document.querySelectorAll('.pow-item').forEach(item => {
-          const x = 10 + Math.random() * 80;
-          const y = 10 + Math.random() * 80;
-    
-        item.dataset.leftPercent = x;
-        item.dataset.topPercent = y;
-    
+    // Mess button functionality
+messButton.addEventListener("click", () => {
+    document.querySelectorAll('.pow-item').forEach(item => {
+        const x = 10 + Math.random() * 80;
+        const y = 10 + Math.random() * 80;
+        
+        const formattedX = x.toFixed(4);
+        const formattedY = y.toFixed(4);
+        const formattedPosition = `${formattedX},${formattedY}`;
+
+        item.dataset.leftPercent = formattedX;
+        item.dataset.topPercent = formattedY;
+
         const boardRect = board.getBoundingClientRect();
         const newLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
         const newTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
-    
+
         item.style.left = `${newLeftPx}px`;
         item.style.top = `${newTopPx}px`;
         
-                // Update coordinates display
-          const coordsDisplay = item.querySelector('.pow-item-coordinates');
-          if (coordsDisplay) {
-              coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
-          }
-    
-        console.log(`Repositioned item to random location: left ${x}%, top ${y}%`);
-      });
+        // Update both displays
+        const positionElement = item.querySelector('.pow-itemposition');
+        const coordsDisplay = item.querySelector('.pow-item-coordinates');
+        
+        if (positionElement) {
+            positionElement.textContent = formattedPosition;
+        }
+        if (coordsDisplay) {
+            coordsDisplay.textContent = formattedPosition;
+        }
     });
-  
-    // Stack button functionality: position all items to the center of the board
-    stackButton.addEventListener("click", () => {
-      document.querySelectorAll('.pow-item').forEach(item => {
-        const x = 50;
-        const y = 50;
-    
-        item.dataset.leftPercent = x;
-        item.dataset.topPercent = y;
-    
+});
+
+// Stack button functionality
+stackButton.addEventListener("click", () => {
+    document.querySelectorAll('.pow-item').forEach(item => {
+        const formattedPosition = "50.0000,50.0000";
+        
+        item.dataset.leftPercent = "50.0000";
+        item.dataset.topPercent = "50.0000";
+
         const boardRect = board.getBoundingClientRect();
-        const newLeftPx = (x / 100) * boardRect.width - (item.offsetWidth / 2);
-        const newTopPx = (y / 100) * boardRect.height - (item.offsetHeight / 2);
-    
+        const newLeftPx = (50 / 100) * boardRect.width - (item.offsetWidth / 2);
+        const newTopPx = (50 / 100) * boardRect.height - (item.offsetHeight / 2);
+
         item.style.left = `${newLeftPx}px`;
         item.style.top = `${newTopPx}px`;
         
-                // Update coordinates display
-          const coordsDisplay = item.querySelector('.pow-item-coordinates');
-          if (coordsDisplay) {
-              coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
-          }
-    
-        console.log(`Positioned item to center: left ${x}%, top ${y}%`);
-      });
+        // Update both displays
+        const positionElement = item.querySelector('.pow-itemposition');
+        const coordsDisplay = item.querySelector('.pow-item-coordinates');
+        
+        if (positionElement) {
+            positionElement.textContent = formattedPosition;
+        }
+        if (coordsDisplay) {
+            coordsDisplay.textContent = formattedPosition;
+        }
     });
+});
   });
