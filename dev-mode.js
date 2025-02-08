@@ -142,16 +142,16 @@ const DevModeManager = {
                 const positionElement = item.querySelector('.pow-item-coordinates');
                 const orderElement = item.querySelector('.pow-item-order');
             
-                // Parse existing values
+                // Parse the full existing data-raw-content attribute
                 const rawContent = positionElement?.getAttribute('data-raw-content') || '';
-                const existingPosition = this.parsePositionOrderFormat(rawContent); // Parse all existing values
+                const existingPosition = this.parsePositionOrderFormat(rawContent); // Parse full data
                 console.log(`[dragend] Parsed existingPosition object:`, existingPosition);
             
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
             
-                // Merge new position into the existing object
+                // Merge new position into the full existing object
                 existingPosition[pageIdentifier] = newPosition; // Add or update the key-value pair
                 console.log(`[After Update] existingPosition:`, existingPosition);
             
