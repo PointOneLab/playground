@@ -88,7 +88,7 @@ const DevModeManager = {
                 const pageIdentifier = `${contextCollection}/${contextId}`;
                 
                 // Get current position and order values
-                const positionElement = item.querySelector('.pow-itemposition');
+                const positionElement = item.querySelector('.pow-item-coordinates');
                 console.log('Position element found:', {
                     element: positionElement,
                     text: positionElement?.innerText,
