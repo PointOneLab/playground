@@ -2,68 +2,59 @@ document.addEventListener("DOMContentLoaded", function () {
     const contextCollection = document.body.getAttribute('pow-database-collection');
     const contextId = document.body.getAttribute('pow-database-id');
     const pageIdentifier = `${contextCollection}/${contextId}`;
-  
+
     console.log('Initial DOM Content Load:', { contextCollection, contextId, pageIdentifier });
-  
+
     if (!contextCollection || !contextId) {
-      console.error("Page context attributes missing or invalid");
-      return;
+        console.error("Page context attributes (pow-database-collection or pow-database-id) are missing or invalid.");
+        return;
     }
-  
-    // Select both database fields and position/order elements
+
+    // Select all elements with the attribute pow-database-field
     const allElements = document.querySelectorAll('[pow-database-field], .pow-itemposition, .pow-item-order');
-  
+
     allElements.forEach((element) => {
-      try {
-        const rawContent = element.innerText.trim();
-        console.log('Processing element:', {
-          element,
-          class: element.className,
-          rawContent
-        });
-  
-        // Store original format for position/order elements
-        if (element.classList.contains('pow-itemposition') || element.classList.contains('pow-item-order')) {
-          element.dataset.originalFormat = rawContent;
-          console.log('Stored original format:', {
-            element: element.className,
-            originalFormat: rawContent
-          });
-        }
-  
-        // Process JSON-like format
-        if (rawContent.includes(':') && rawContent.includes(';')) {
-            const cleanedContent = rawContent.replace(/^"|"$/g, '').trim();
-            const entries = cleanedContent.split(';').map(entry => entry.trim()).filter(entry => entry);
-            const dataMap = {};
-        
-            entries.forEach(entry => {
-                const [key, value] = entry.split(':').map(part => part.trim());
-                if (key && value) {
-                    dataMap[key.replace(/"/g, '')] = value.replace(/"/g, '');
-                }
+        try {
+            const rawContent = element.innerText.trim();
+            console.log('Processing element:', {
+                element: element.className,
+                rawContent
             });
-        
-            console.log('Parsed data map:', dataMap);
-        
-            const resolvedKey = `${contextCollection}/${contextId}`;
-            const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
-        
-            // Store the full format before updating display
+
+            // For position/order elements, store the raw format FIRST
             if (element.classList.contains('pow-itemposition') || element.classList.contains('pow-item-order')) {
+                console.log('Storing original format for:', element.className);
                 element.dataset.originalFormat = rawContent;
-                console.log('Storing full format:', {
+            }
+
+            // Then process the content
+            if (rawContent.includes(':') && rawContent.includes(';')) {
+                const entries = rawContent.split(';').map(entry => entry.trim()).filter(entry => entry);
+                const dataMap = {};
+
+                entries.forEach(entry => {
+                    const [key, value] = entry.split(':').map(part => part.trim().replace(/"|\'|`/g, ''));
+                    if (key && value) {
+                        dataMap[key] = value;
+                    }
+                });
+
+                const resolvedKey = `${contextCollection}/${contextId}`;
+                const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
+
+                // Update display with resolved value
+                element.innerText = resolvedValue;
+
+                console.log('Processed element:', {
                     element: element.className,
-                    originalFormat: rawContent,
-                    displayValue: resolvedValue
+                    originalFormat: element.dataset.originalFormat,
+                    resolvedValue: resolvedValue,
+                    dataMap: dataMap
                 });
             }
-        
-            // Update display with resolved value
-            element.innerText = resolvedValue;
+        } catch (error) {
+            console.error("Error processing element:", error);
+            element.innerText = "Error loading data.";
         }
-      } catch (error) {
-        console.error("Error processing element:", error);
-      }
     });
-  });
+});
