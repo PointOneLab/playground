@@ -142,29 +142,36 @@ const DevModeManager = {
                 const positionElement = item.querySelector('.pow-item-coordinates');
                 const orderElement = item.querySelector('.pow-item-order');
             
-                // Parse the full existing data-raw-content attribute
+                // Step 1: Log initial data-raw-content
                 const rawContent = positionElement?.getAttribute('data-raw-content') || '';
-                const existingPosition = this.parsePositionOrderFormat(rawContent); // Parse full data
-                console.log(`[dragend] Parsed existingPosition object:`, existingPosition);
+                console.log(`[dragend] Initial data-raw-content:`, rawContent);
             
-                // Get new values
+                // Step 2: Parse the full object from data-raw-content
+                const existingPosition = this.parsePositionOrderFormat(rawContent);
+                console.log(`[dragend] Parsed object from data-raw-content:`, existingPosition);
+            
+                // Step 3: Get new position values (from drag event)
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
-                const newOrder = item.style.zIndex || '1';
+                console.log(`[dragend] New position for ${pageIdentifier}:`, newPosition);
             
-                // Merge new position into the full existing object
+                // Step 4: Explicitly merge new data into the parsed object
                 existingPosition[pageIdentifier] = newPosition; // Add or update the key-value pair
-                console.log(`[After Update] existingPosition:`, existingPosition);
+                console.log(`[dragend] Merged object (after adding new position):`, existingPosition);
             
-                // Update the data-raw-content attribute
+                // Step 5: Serialize the merged object
                 const serializedPosition = this.stringifyPositionOrderFormat(existingPosition);
-                positionElement.setAttribute('data-raw-content', serializedPosition);
-                console.log(`[dragend] Updated data-raw-content attribute:`, serializedPosition);
+                console.log(`[dragend] Serialized data-raw-content:`, serializedPosition);
             
-                // Parse and update order (if applicable)
+                // Step 6: Update the DOM element with the serialized data
+                positionElement.setAttribute('data-raw-content', serializedPosition);
+                console.log(`[dragend] Updated data-raw-content attribute:`, positionElement.getAttribute('data-raw-content'));
+            
+                // Step 7: Parse and update order (if applicable)
                 const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
+                const newOrder = item.style.zIndex || '1';
                 existingOrder[pageIdentifier] = newOrder;
             
-                // Store changes
+                // Store changes in the global map
                 window.positionChanges.set(itemId, {
                     itemId,
                     position: serializedPosition,
@@ -172,6 +179,7 @@ const DevModeManager = {
                     collectionType
                 });
             
+                // Update change count
                 this.updateChangeCount();
             });
         });
