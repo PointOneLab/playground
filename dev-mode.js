@@ -106,11 +106,11 @@ const DevModeManager = {
                 existingOrder[pageIdentifier] = item.style.zIndex || '1';
                 
                 // Serialize and update the data-raw-content attributes
-const serializedPosition = this.stringifyPositionOrderFormat(existingPosition);
-positionElement.setAttribute('data-raw-content', serializedPosition);
+                const serializedPosition = this.stringifyPositionOrderFormat(existingPosition);
+                positionElement.setAttribute('data-raw-content', serializedPosition);
 
-const serializedOrder = this.stringifyPositionOrderFormat(existingOrder);
-orderElement.setAttribute('data-raw-content', serializedOrder);
+                const serializedOrder = this.stringifyPositionOrderFormat(existingOrder);
+                orderElement.setAttribute('data-raw-content', serializedOrder);
 
                 // Store changes
                 window.positionChanges.set(itemId, {
