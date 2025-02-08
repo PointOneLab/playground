@@ -35,17 +35,13 @@ document.addEventListener("DOMContentLoaded", function () {
           const resolvedValue = dataMap[resolvedKey] || dataMap["default"] || "No data available.";
   
           // Render the resolved content
+          element.setAttribute('data-raw-content', rawContent);
+          console.log(`[DOMContentLoaded] Stored raw content for element:`, rawContent);
+console.log(`[DOMContentLoaded] data-raw-content attribute:`, element.getAttribute('data-raw-content'));
           element.innerText = resolvedValue;
-
-          console.log(`[DOMContentLoaded] data-raw-content attribute:`, element.getAttribute('data-raw-content'));
-
-          
         } else {
-            // If no structured format detected, initialize data-raw-content
-            const structuredContent = `default: ${rawContent};`; // Default to the raw content
-            element.setAttribute('data-raw-content', structuredContent);
-            console.log(`[DOMContentLoaded] Initialized structured content:`, structuredContent);
-            element.innerText = rawContent;
+          // Use the entire content as the default if no structured format is detected
+          element.innerText = rawContent;
         }
       } catch (error) {
         console.error("Error processing content for element with pow-database-field:", error);

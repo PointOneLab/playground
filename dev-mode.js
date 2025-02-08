@@ -1,27 +1,26 @@
 // Dev Mode Manager
 const DevModeManager = {
     parsePositionOrderFormat(value) {
-        if (!value || !value.includes(':') || !value.includes(';')) {
+        if (!value || !value.includes(':')) {
             return {};
         }
-        
-        const entries = value.split(';').map(entry => entry.trim()).filter(entry => entry);
         const result = {};
-        
+        const entries = value.split(';').map(entry => entry.trim()).filter(entry => entry);
         entries.forEach(entry => {
-            const [key, value] = entry.split(':').map(part => part.trim());
-            if (key && value) {
-                const cleanKey = key.replace(/^["']|["']$/g, '');
-                const cleanValue = value.replace(/^["']|["']$/g, '');
-                result[cleanKey] = cleanValue;
+            const separatorIndex = entry.indexOf(':');
+            if (separatorIndex === -1) return; // Skip invalid entries
+            const key = entry.slice(0, separatorIndex).trim().replace(/"/g, '');
+            const val = entry.slice(separatorIndex + 1).trim().replace(/"/g, '');
+            if (key && val) {
+                result[key] = val;
             }
         });
-        
         return result;
     },
 
-    stringifyPositionOrderFormat(data) {
-        return Object.entries(data)
+    stringifyPositionOrderFormat(obj) {
+        console.log(`[stringifyPositionOrderFormat] Input object:`, obj);
+        return Object.entries(obj)
             .map(([key, value]) => `"${key}": "${value}"`)
             .join('; ');
     },
@@ -86,40 +85,56 @@ const DevModeManager = {
                 const contextCollection = document.body.getAttribute('pow-database-collection');
                 const contextId = document.body.getAttribute('pow-database-id');
                 const pageIdentifier = `${contextCollection}/${contextId}`;
-                
+            
                 // Get current position and order values
                 const positionElement = item.querySelector('.pow-itemposition');
                 const orderElement = item.querySelector('.pow-item-order');
-                
-                // Parse existing values
-                const rawPositionContent = positionElement?.getAttribute('data-raw-content') || '';
-                const existingPosition = this.parsePositionOrderFormat(rawPositionContent);
-                const rawOrderContent = orderElement?.getAttribute('data-raw-content') || '';
-                const existingOrder = this.parsePositionOrderFormat(rawOrderContent);
-                
-                // Get new values
+            
+                // Step 1: Check data-raw-content
+                console.log(`[dragend] Checking positionElement:`, positionElement);
+                console.log(`[dragend] Checking data-raw-content attribute:`, positionElement?.getAttribute('data-raw-content'));
+            
+                // Step 2: Parse existing data-raw-content or reinitialize if missing
+                let rawContent = positionElement?.getAttribute('data-raw-content') || '';
+                if (!rawContent) {
+                    console.warn(`[dragend] data-raw-content is missing. Reinitializing with default.`);
+                    rawContent = `"default": "0,0"`;
+                    positionElement.setAttribute('data-raw-content', rawContent);
+                }
+            
+                const existingPosition = this.parsePositionOrderFormat(rawContent);
+                console.log(`[dragend] Parsed object from data-raw-content:`, existingPosition);
+            
+                // Step 3: Get new position values (from drag event)
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
-                const newOrder = item.style.zIndex || '1';
-                
-                // Update values for current page
-                existingPosition[pageIdentifier] = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
-                existingOrder[pageIdentifier] = item.style.zIndex || '1';
-                
-                // Serialize and update the data-raw-content attributes
+                console.log(`[dragend] New position for ${pageIdentifier}:`, newPosition);
+            
+                // Step 4: Merge new data into the parsed object
+                existingPosition[pageIdentifier] = newPosition; // Add or update the key-value pair
+                console.log(`[dragend] Merged object (after adding new position):`, existingPosition);
+            
+                // Step 5: Serialize the merged object
                 const serializedPosition = this.stringifyPositionOrderFormat(existingPosition);
+                console.log(`[dragend] Serialized data-raw-content:`, serializedPosition);
+            
+                // Step 6: Update the DOM element with the serialized data
                 positionElement.setAttribute('data-raw-content', serializedPosition);
-
-                const serializedOrder = this.stringifyPositionOrderFormat(existingOrder);
-                orderElement.setAttribute('data-raw-content', serializedOrder);
-
-                // Store changes
+                console.log(`[dragend] Updated data-raw-content attribute:`, positionElement.getAttribute('data-raw-content'));
+            
+                // Step 7: Parse and update order (if applicable)
+                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
+                const newOrder = item.style.zIndex || '1';
+                existingOrder[pageIdentifier] = newOrder;
+            
+                // Store changes in the global map
                 window.positionChanges.set(itemId, {
                     itemId,
-                    position: this.stringifyPositionOrderFormat(existingPosition),
+                    position: serializedPosition,
                     order: this.stringifyPositionOrderFormat(existingOrder),
                     collectionType
                 });
-                
+            
+                // Update change count
                 this.updateChangeCount();
             });
         });
@@ -144,6 +159,7 @@ const DevModeManager = {
 
     async saveChanges() {
         const changes = Array.from(window.positionChanges.values());
+        console.log(`[saveChanges] Changes being sent to API:`, changes);
         if (changes.length === 0) return;
 
         const saveButton = document.getElementById('saveChanges');
