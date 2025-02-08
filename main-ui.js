@@ -387,50 +387,41 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
   
-  function positionItemWithLoadedDimensions(item, x, y, mediaElement = null) {
-      const boardRect = board.getBoundingClientRect();
-      let elementForDimensions;
-      
-      if (mediaElement) {
-          // For media elements (images or videos), use their direct dimensions
-          elementForDimensions = mediaElement;
-      } else {
-          // For other items, use the item's dimensions
-          elementForDimensions = item;
-      }
-  
-      // Get precise measurements
-      const rect = elementForDimensions.getBoundingClientRect();
-      
-      // Calculate center position with precise decimal values
-      const newLeftPx = Math.round(((x / 100) * boardRect.width) - (rect.width / 2));
-      const newTopPx = Math.round(((y / 100) * boardRect.height) - (rect.height / 2));
-  
-      // Apply position
-      item.style.left = `${newLeftPx}px`;
-      item.style.top = `${newTopPx}px`;
-  
-      // Update coordinate display
-      const coordsDisplay = item.querySelector('.pow-item-coordinates');
-      if (coordsDisplay) {
-          coordsDisplay.textContent = `${x.toFixed(2)},${y.toFixed(2)}`;
-      }
-  
-      // Debug logging
-      console.log('Positioning details:', {
-          type: mediaElement ? (mediaElement.tagName === 'VIDEO' ? 'video' : 'image') : 'other',
-          dimensions: {
-              width: rect.width,
-              height: rect.height
-          },
-          position: {
-              x,
-              y,
-              leftPx: newLeftPx,
-              topPx: newTopPx
-          }
-      });
-  }
+    function positionItemWithLoadedDimensions(item, x, y, mediaElement = null) {
+        const boardRect = board.getBoundingClientRect();
+        let elementForDimensions = mediaElement || item;
+    
+        // Get precise measurements
+        const rect = elementForDimensions.getBoundingClientRect();
+        
+        // Calculate center position with precise decimal values
+        const newLeftPx = Math.round(((x / 100) * boardRect.width) - (rect.width / 2));
+        const newTopPx = Math.round(((y / 100) * boardRect.height) - (rect.height / 2));
+    
+        // Apply position
+        item.style.left = `${newLeftPx}px`;
+        item.style.top = `${newTopPx}px`;
+    
+        // Format position with 4 decimal places
+        const formattedPosition = `${parseFloat(x).toFixed(4)},${parseFloat(y).toFixed(4)}`;
+    
+        // Update both displays
+        const positionElement = item.querySelector('.pow-itemposition');
+        const coordsDisplay = item.querySelector('.pow-item-coordinates');
+        
+        if (positionElement) {
+            positionElement.textContent = formattedPosition;
+        }
+        if (coordsDisplay) {
+            coordsDisplay.textContent = formattedPosition;
+        }
+    
+        console.log('Positioning details:', {
+            itemId: item.getAttribute('data-item-id'),
+            position: formattedPosition,
+            pixels: { left: newLeftPx, top: newTopPx }
+        });
+    }
     
     // Store the percentage positions for all existing items on load
     document.querySelectorAll('.pow-item').forEach(item => {
