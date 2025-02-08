@@ -273,15 +273,37 @@ document.addEventListener("DOMContentLoaded", function() {
   
     // Position items based on their defined coordinates or predefined names
     function positionExistingItems() {
+        const contextCollection = document.body.getAttribute('pow-database-collection');
+        const contextId = document.body.getAttribute('pow-database-id');
+        const pageIdentifier = `${contextCollection}/${contextId}`;
+    
         document.querySelectorAll('.pow-item').forEach(item => {
             const positionElement = item.querySelector('.pow-itemposition');
-            if (!positionElement) return;
-    
-            const positionText = positionElement.innerText.trim();
             const coordinatesElement = item.querySelector('.pow-item-coordinates');
-            
+            const positionText = positionElement?.innerText.trim();
+            if (!positionText) return;
+    
             let [x, y] = [0, 0];
-            if (predefinedLocations[positionText]) {
+            
+            // Handle JSON-like format first
+            if (positionText.includes(':') && positionText.includes(';')) {
+                const entries = positionText.split(';').map(entry => entry.trim());
+                const positionMap = {};
+                
+                entries.forEach(entry => {
+                    if (!entry) return;
+                    const [key, value] = entry.split(':').map(part => part.trim().replace(/"/g, ''));
+                    if (key && value) {
+                        positionMap[key] = value;
+                    }
+                });
+                
+                // Get position for current page or fall back to default
+                const pagePosition = positionMap[pageIdentifier] || positionMap["default"];
+                if (pagePosition) {
+                    [x, y] = pagePosition.split(',').map(Number);
+                }
+            } else if (predefinedLocations[positionText]) {
                 [x, y] = predefinedLocations[positionText].split(',').map(Number);
             } else if (positionText.startsWith('~(') && positionText.endsWith(')')) {
                 const value = positionText.slice(2, -1).trim();
@@ -299,13 +321,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 [x, y] = positionText.split(',').map(Number);
             }
     
+            // Format position with 4 decimal places
+            const formattedX = x.toFixed(4);
+            const formattedY = y.toFixed(4);
+            
             // Store positions immediately
-            item.dataset.leftPercent = x.toFixed(4);
-            item.dataset.topPercent = y.toFixed(4);
+            item.dataset.leftPercent = formattedX;
+            item.dataset.topPercent = formattedY;
     
-            // Update both displays with formatted values
-            const formattedPosition = `${x.toFixed(4)},${y.toFixed(4)}`;
-            positionElement.textContent = formattedPosition;
+            // Update both displays
+            const formattedPosition = `${formattedX},${formattedY}`;
+            if (positionElement) {
+                positionElement.textContent = formattedPosition;
+            }
             if (coordinatesElement) {
                 coordinatesElement.textContent = formattedPosition;
             }
