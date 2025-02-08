@@ -137,51 +137,41 @@ const DevModeManager = {
                 const contextCollection = document.body.getAttribute('pow-database-collection');
                 const contextId = document.body.getAttribute('pow-database-id');
                 const pageIdentifier = `${contextCollection}/${contextId}`;
-                
+            
                 // Get current position and order values
                 const positionElement = item.querySelector('.pow-item-coordinates');
                 const orderElement = item.querySelector('.pow-item-order');
-                
+            
                 // Parse existing values
-                const existingPosition = this.parsePositionOrderFormat(positionElement?.getAttribute('data-raw-content') || '');
+                const rawContent = positionElement?.getAttribute('data-raw-content') || '';
+                const existingPosition = this.parsePositionOrderFormat(rawContent); // Parse all existing values
                 console.log(`[dragend] Parsed existingPosition object:`, existingPosition);
-
-                // Debugging Code for Parsing Test
-                const testValue = `"default": "25,75"; "board/6": "~(25,25)"; "board/148": "75,25"; "static/home": "75,75"`;
-                const parsedResult = this.parsePositionOrderFormat(testValue);
-                console.log(`[Parsing Test] Parsed result:`, parsedResult);
-
-                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
-                
+            
                 // Get new values
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
-                
-                // Update values for current page
-                console.log(`[Before Update] existingPosition:`, existingPosition);
-
-                existingPosition[pageIdentifier] = newPosition;
-
+            
+                // Merge new position into the existing object
+                existingPosition[pageIdentifier] = newPosition; // Add or update the key-value pair
                 console.log(`[After Update] existingPosition:`, existingPosition);
-
+            
+                // Update the data-raw-content attribute
+                const serializedPosition = this.stringifyPositionOrderFormat(existingPosition);
+                positionElement.setAttribute('data-raw-content', serializedPosition);
+                console.log(`[dragend] Updated data-raw-content attribute:`, serializedPosition);
+            
+                // Parse and update order (if applicable)
+                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
                 existingOrder[pageIdentifier] = newOrder;
-                
-                
-                positionElement.setAttribute('data-raw-content', this.stringifyPositionOrderFormat(existingPosition));
-                console.log(`[dragend] Updated data-raw-content attribute:`, positionElement.getAttribute('data-raw-content'));
-
-                // Debugging Code for Serialization Test
-                const serialized = this.stringifyPositionOrderFormat(existingPosition);
-                console.log(`[Serialization Test] Serialized result:`, serialized);
-
+            
                 // Store changes
                 window.positionChanges.set(itemId, {
                     itemId,
-                    position: this.stringifyPositionOrderFormat(existingPosition),
+                    position: serializedPosition,
                     order: this.stringifyPositionOrderFormat(existingOrder),
                     collectionType
                 });
-                
+            
                 this.updateChangeCount();
             });
         });
