@@ -78,7 +78,22 @@ const DevModeManager = {
         document.querySelectorAll('.pow-item').forEach(item => {
             const draggable = item._draggable;
             if (!draggable) return;
-
+    
+            const positionElement = item.querySelector('.pow-itemposition');
+            const orderElement = item.querySelector('.pow-item-order');
+            
+            // Get original data from the raw content
+            const originalPositionData = positionElement?.innerText || '';
+            const originalOrderData = orderElement?.innerText || '';
+            
+            // Parse the original data
+            const originalPosition = this.parsePositionOrderFormat(originalPositionData);
+            const originalOrder = this.parsePositionOrderFormat(originalOrderData);
+            
+            // Store original data on the item element for reference
+            item.originalPosition = originalPosition;
+            item.originalOrder = originalOrder;
+    
             const collectionType = this.getItemCollectionType(item);
             
             draggable.addEventListener('dragend', () => {
@@ -87,42 +102,37 @@ const DevModeManager = {
                 const contextId = document.body.getAttribute('pow-database-id');
                 const pageIdentifier = `${contextCollection}/${contextId}`;
                 
-                // Get current position and order values
-                const positionElement = item.querySelector('.pow-itemposition');
-                const orderElement = item.querySelector('.pow-item-order');
+                // Create new position and order data by copying original data
+                const newPosition = { ...item.originalPosition };
+                const newOrder = { ...item.originalOrder };
                 
-                // Parse existing values
-                const existingPosition = this.parsePositionOrderFormat(positionElement?.innerText || '');
-                const existingOrder = this.parsePositionOrderFormat(orderElement?.innerText || '');
+                // Update only the current page's values
+                const currentPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
+                const currentOrder = item.style.zIndex || '1';
                 
-                // Get new values
-                const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
-                const newOrder = item.style.zIndex || '1';
+                newPosition[pageIdentifier] = currentPosition;
+                newOrder[pageIdentifier] = currentOrder;
                 
-                // Update values for current page
-                existingPosition[pageIdentifier] = newPosition;
-                existingOrder[pageIdentifier] = newOrder;
-                
-                // Ensure default values exist
-                if (!('default' in existingPosition)) {
-                    existingPosition['default'] = newPosition;
+                // Ensure default values exist if they don't
+                if (!('default' in newPosition)) {
+                    newPosition['default'] = currentPosition;
                 }
-                if (!('default' in existingOrder)) {
-                    existingOrder['default'] = newOrder;
+                if (!('default' in newOrder)) {
+                    newOrder['default'] = currentOrder;
                 }
                 
-                // Store changes
+                // Store changes while preserving all original data
                 window.positionChanges.set(itemId, {
                     itemId,
-                    position: this.stringifyPositionOrderFormat(existingPosition),
-                    order: this.stringifyPositionOrderFormat(existingOrder),
+                    position: this.stringifyPositionOrderFormat(newPosition),
+                    order: this.stringifyPositionOrderFormat(newOrder),
                     collectionType
                 });
                 
                 this.updateChangeCount();
             });
         });
-    },
+    }
 
     getItemCollectionType(item) {
         if (item.closest('#images-collection')) return 'images';
