@@ -78,7 +78,7 @@ const DevModeManager = {
         document.querySelectorAll('.pow-item').forEach(item => {
             const draggable = item._draggable;
             if (!draggable) return;
-
+    
             const collectionType = this.getItemCollectionType(item);
             
             draggable.addEventListener('dragend', () => {
@@ -99,17 +99,9 @@ const DevModeManager = {
                 const newPosition = `${item.dataset.leftPercent},${item.dataset.topPercent}`;
                 const newOrder = item.style.zIndex || '1';
                 
-                // Update values for current page
+                // Update values ONLY for current page
                 existingPosition[pageIdentifier] = newPosition;
                 existingOrder[pageIdentifier] = newOrder;
-                
-                // Ensure default values exist
-                if (!('default' in existingPosition)) {
-                    existingPosition['default'] = newPosition;
-                }
-                if (!('default' in existingOrder)) {
-                    existingOrder['default'] = newOrder;
-                }
                 
                 // Store changes
                 window.positionChanges.set(itemId, {
