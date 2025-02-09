@@ -98,7 +98,7 @@ const DevModeManager = {
                 let rawContent = positionElement?.getAttribute('data-raw-content') || '';
                 if (!rawContent) {
                     console.warn(`[dragend] data-raw-content is missing. Reinitializing with default.`);
-                    rawContent = `"default": "0,0"`;
+                    rawContent = `"default": "50,50"`;
                     positionElement.setAttribute('data-raw-content', rawContent);
                 }
             
@@ -125,7 +125,7 @@ const DevModeManager = {
                 let rawOrderContent = orderElement?.getAttribute('data-raw-content') || '';
                 if (!rawOrderContent) {
                 console.warn(`[dragend] data-raw-content for order is missing. Reinitializing with default.`);
-                rawOrderContent = `"default": "1"`;
+                rawOrderContent = `"default": "100"`;
                 orderElement.setAttribute('data-raw-content', rawOrderContent);
                 }
                 const existingOrder = this.parsePositionOrderFormat(rawOrderContent);
