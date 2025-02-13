@@ -189,10 +189,20 @@ const powPartyCard = {
     },
 
     // 处理卡片效果
-    handleCardEffect(card, currentPlayer) {
-        // 这里之后会实现具体的卡片效果处理逻辑
-        console.log(`执行卡片效果: ${card.cardAlias}`);
+handleCardEffect(card, currentPlayer) {
+    if (!powPartyEffects.canExecuteEffect(card)) {
+        console.log('无法执行卡片效果：条件不满足');
+        return false;
     }
+
+    const success = powPartyEffects.executeCardEffect(card, currentPlayer);
+    if (success) {
+        const effectDescription = powPartyEffects.getEffectDescription(card);
+        console.log(`执行卡片效果成功：${effectDescription}`);
+    }
+
+    return success;
+}
 };
 
 // 初始化卡片系统
