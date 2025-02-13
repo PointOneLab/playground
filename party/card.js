@@ -103,6 +103,7 @@ const powPartyCard = {
 
     // 开始洗牌动画
     startShuffle() {
+        powPartyAudio.sounds.shuffle();
         this.state.isShuffling = true;
         this.elements.button.textContent = '抽牌';
         
@@ -151,6 +152,7 @@ const powPartyCard = {
 
         // 显示选中的卡片
         this.displayCard(selectedCard, false);
+        powPartyAudio.playCardSound(selectedCard.cardType);
 
         // 触发卡片效果
         this.handleCardEffect(selectedCard, currentPlayer);
