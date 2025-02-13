@@ -101,19 +101,50 @@ const powPartyCard = {
         );
     },
 
-    // 开始洗牌动画
     startShuffle() {
+        // 播放洗牌音效
         powPartyAudio.sounds.shuffle();
-        this.state.isShuffling = true;
-        this.elements.button.textContent = '抽牌';
         
-        // 开始卡片切换动画
-        this.state.shuffleInterval = setInterval(() => {
-            const randomCard = this.cards[Math.floor(Math.random() * this.cards.length)];
-            this.displayCard(randomCard, true);
-        }, 100);
+        // 设置洗牌状态
+        this.state.isShuffling = true;
+        
+        // 构建当前游戏状态
+        const gameState = {
+            roundCount: powPartyGame.state.round,
+            currentPlayer: powPartyGame.getCurrentPlayer(),
+            players: powPartyGame.state.players,
+            pool: {
+                money: powPartyPool.state.money.current,
+                alcohol: powPartyPool.state.alcohol.current
+            }
+        };
+    
+        // 从数据库获取卡片
+        const selectedCard = powPartyCardDatabase.getEnabledCards()[0];
+        console.log('Selected card:', selectedCard);
+    
+        if (selectedCard) {
+            // 更新卡片状态
+            this.state.selectedCard = {
+                type: selectedCard.cardType,
+                name: selectedCard.cardName,
+                content: selectedCard.cardContent,
+                emoji: selectedCard.cardEmoji
+            };
+    
+            // 应用卡片效果
+            powPartyCardDatabase.applyCardEffects(selectedCard, gameState);
+            
+            // 更新游戏状态
+            powPartyPool.state.money.current = gameState.pool.money;
+            powPartyPool.state.alcohol.current = gameState.pool.alcohol;
+            powPartyGame.state.players = gameState.players;
+        }
+    
+        // 执行洗牌动画
+        this.shuffleAnimation();
     },
-
+    
     // 停止洗牌并选择最终卡片
     stopShuffle() {
         clearInterval(this.state.shuffleInterval);

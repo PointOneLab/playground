@@ -1,4 +1,4 @@
-const powPartyCards = {
+const powPartyCardDatabase = {
     cardSets: {
         cards: [
             {
@@ -170,3 +170,6 @@ const powPartyCards = {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('卡片数据库已加载');
 });
+
+// 在文件最后，DOMContentLoaded 事件监听器之后添加这行
+window.powPartyCardDatabase = powPartyCardDatabase;
