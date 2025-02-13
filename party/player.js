@@ -95,5 +95,9 @@ const powPartyGame = {
 
 // 初始化游戏
 document.addEventListener('DOMContentLoaded', () => {
-    powPartyGame.init();
+    // 初始化游戏
+    const gameContainer = document.querySelector('.pow-party-game');
+    if (gameContainer) {
+        powPartyGame.init();
+    }
 });

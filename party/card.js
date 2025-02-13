@@ -152,6 +152,7 @@ const powPartyCard = {
 
         // 显示选中的卡片
         this.displayCard(selectedCard, false);
+        powPartyStats.stats.gameStats.totalRoundsPlayed++;
         powPartyAudio.playCardSound(selectedCard.cardType);
 
         // 触发卡片效果
