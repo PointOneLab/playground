@@ -144,7 +144,7 @@ const powPartyCard = {
         // 执行洗牌动画
         this.shuffleAnimation();
     },
-    
+
     // 停止洗牌并选择最终卡片
     stopShuffle() {
         clearInterval(this.state.shuffleInterval);
@@ -242,4 +242,22 @@ handleCardEffect(card, currentPlayer) {
 // 初始化卡片系统
 document.addEventListener('DOMContentLoaded', () => {
     powPartyCard.init();
+});
+
+// 添加按钮事件监听
+document.addEventListener('DOMContentLoaded', () => {
+    const gameButton = document.querySelector('.pow-party-game-button');
+    if (gameButton) {
+        console.log('游戏按钮已找到');
+        gameButton.addEventListener('click', () => {
+            console.log('按钮被点击');
+            if (typeof powPartyCard !== 'undefined' && powPartyCard.startShuffle) {
+                powPartyCard.startShuffle();
+            } else {
+                console.error('powPartyCard 或 startShuffle 方法未定义');
+            }
+        });
+    } else {
+        console.error('未找到游戏按钮');
+    }
 });
