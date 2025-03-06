@@ -53,7 +53,7 @@ function setInfoGroupVisibility(isVisible) {
   
   // Apply stored settings on page load
   window.addEventListener('DOMContentLoaded', () => {
-    applyInfoGroupVisibility();
+    // applyInfoGroupVisibility();
     applyGuideSize();
     applyCurrentMode();
   });
