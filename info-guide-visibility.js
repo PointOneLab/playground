@@ -3,13 +3,13 @@ function setInfoGroupVisibility(isVisible) {
     localStorage.setItem('infoGroupVisible', isVisible ? 'on' : 'off');
     applyInfoGroupVisibility();
   }
-  /*
+  
   function applyInfoGroupVisibility() {
     const visibility = localStorage.getItem('infoGroupVisible') || 'off';
     document.documentElement.classList.toggle('info-visible', visibility === 'on');
     document.documentElement.classList.toggle('info-hidden', visibility === 'off');
   }
-  */
+  
   function setGuideSize(size) {
     localStorage.setItem('guideSize', size);
     applyGuideSize();
@@ -53,7 +53,7 @@ function setInfoGroupVisibility(isVisible) {
   
   // Apply stored settings on page load
   window.addEventListener('DOMContentLoaded', () => {
-    // applyInfoGroupVisibility();
+    applyInfoGroupVisibility();
     applyGuideSize();
     applyCurrentMode();
   });
