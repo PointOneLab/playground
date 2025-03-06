@@ -41,8 +41,8 @@ function setInfoGroupVisibility(isVisible) {
   
   
   // Event listeners for user interactions
-  document.querySelector('.pow-info-on').addEventListener('click', () => setInfoGroupVisibility(true));
-  document.querySelector('.pow-info-off').addEventListener('click', () => setInfoGroupVisibility(false));
+  //document.querySelector('.pow-info-on').addEventListener('click', () => setInfoGroupVisibility(true));
+  //document.querySelector('.pow-info-off').addEventListener('click', () => setInfoGroupVisibility(false));
   
   document.querySelector('.pow-guide-small').addEventListener('click', () => setGuideSize('small'));
   document.querySelector('.pow-guide-large').addEventListener('click', () => setGuideSize('large'));
