@@ -125,7 +125,7 @@ const DevModeManager = {
                 let rawOrderContent = orderElement?.getAttribute('data-raw-content') || '';
                 if (!rawOrderContent) {
                 console.warn(`[dragend] data-raw-content for order is missing. Reinitializing with default.`);
-                rawOrderContent = `"default": "100"`;
+                rawOrderContent = `"default": "1"`;
                 orderElement.setAttribute('data-raw-content', rawOrderContent);
                 }
                 const existingOrder = this.parsePositionOrderFormat(rawOrderContent);
