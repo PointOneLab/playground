@@ -581,7 +581,14 @@ item.addEventListener('click', (e) => {
         }
       });
       // Set new items to highest z-index
-      storeItemOrder(newItem, 9999);
+      // Calculate the highest z-index currently on the board
+const highestZIndex = Math.max(
+  ...Array.from(document.querySelectorAll('.pow-item'))
+    .map(item => parseInt(item.style.zIndex || getComputedStyle(item).zIndex) || 0)
+);
+
+// Store and apply the new z-index
+storeItemOrder(newItem, highestZIndex + 1);
       // Add click handler to bring the new item to front when clicked
 newItem.addEventListener('click', (e) => {
   // Skip if clicking directly on the hide button
