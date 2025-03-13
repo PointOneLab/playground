@@ -467,19 +467,32 @@ document.addEventListener("DOMContentLoaded", function() {
   
       
   // For existing items
-  item.addEventListener('click', (e) => {
-    if (e.target.classList.contains('pow-library-title')) {
-      // Toggle draggable enable/disable
-      const draggableInstance = item._draggable;
-      if (draggableInstance) {
-        if (draggableInstance.enabled()) {
-          draggableInstance.disable();
-        } else {
-          draggableInstance.enable();
-        }
+item.addEventListener('click', (e) => {
+  // Skip if clicking directly on the hide button
+  if (e.target.classList.contains('pow-item-hide')) {
+    return;
+  }
+  
+  // Bring item to front when clicked
+  const highestZIndex = Math.max(
+    ...Array.from(document.querySelectorAll('.pow-item'))
+      .map(i => parseInt(i.style.zIndex) || 0)
+  );
+  storeItemOrder(item, highestZIndex + 1);
+  
+  // Keep the library title toggle functionality if needed
+  if (e.target.classList.contains('pow-library-title')) {
+    // Toggle draggable enable/disable
+    const draggableInstance = item._draggable;
+    if (draggableInstance) {
+      if (draggableInstance.enabled()) {
+        draggableInstance.disable();
+      } else {
+        draggableInstance.enable();
       }
     }
-  }); 
+  }
+});
     });
   
     // Add new item functionality
@@ -578,6 +591,20 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       // Set new items to highest z-index
       storeItemOrder(newItem, 9999);
+      // Add click handler to bring the new item to front when clicked
+newItem.addEventListener('click', (e) => {
+  // Skip if clicking directly on the hide button
+  if (e.target.classList.contains('pow-item-hide')) {
+    return;
+  }
+  
+  // Bring item to front when clicked
+  const highestZIndex = Math.max(
+    ...Array.from(document.querySelectorAll('.pow-item'))
+      .map(i => parseInt(i.style.zIndex) || 0)
+  );
+  storeItemOrder(newItem, highestZIndex + 1);
+});
     });
   
   
