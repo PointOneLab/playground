@@ -443,6 +443,7 @@ document.addEventListener("DOMContentLoaded", function() {
     bounds: board,
   inertia: true,
     trigger: handler,
+    zIndexBoost: false,
   ignore: ".pow-item input",
   allowEventDefault: true,
     dragClickables: true,
