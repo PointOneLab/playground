@@ -466,7 +466,22 @@ document.addEventListener("DOMContentLoaded", function() {
   })[0]; // Get the Draggable instance from the array
   item._draggable = itemDraggable; // Store the Draggable instance in the item
   
-      
+      // For existing items
+item.addEventListener('click', (e) => {
+  // Skip if clicking directly on the hide button
+  if (e.target.classList.contains('pow-item-hide')) {
+    return;
+  }
+  
+  // Bring item to front when clicked
+  const highestZIndex = Math.max(
+    ...Array.from(document.querySelectorAll('.pow-item'))
+      .map(i => parseInt(i.style.zIndex) || 0)
+  );
+  storeItemOrder(item, highestZIndex + 1);
+  
+  
+});
   
     });
   
@@ -552,6 +567,7 @@ document.addEventListener("DOMContentLoaded", function() {
         type: "top,left", // Changed to "top,left"
         bounds: board,
         inertia: true,
+        zIndexBoost: false,
         trigger: handlerDiv,
         ignore: ".pow-item input",
         allowEventDefault: true,
@@ -566,7 +582,20 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       // Set new items to highest z-index
       storeItemOrder(newItem, 9999);
-      
+      // Add click handler to bring the new item to front when clicked
+newItem.addEventListener('click', (e) => {
+  // Skip if clicking directly on the hide button
+  if (e.target.classList.contains('pow-item-hide')) {
+    return;
+  }
+  
+  // Bring item to front when clicked
+  const highestZIndex = Math.max(
+    ...Array.from(document.querySelectorAll('.pow-item'))
+      .map(i => parseInt(i.style.zIndex) || 0)
+  );
+  storeItemOrder(newItem, highestZIndex + 1);
+});
     });
   
   
