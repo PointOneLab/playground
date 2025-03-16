@@ -16,7 +16,7 @@ function setInfoGroupVisibility(isVisible) {
   }
   
   function applyGuideSize() {
-    const guideSize = localStorage.getItem('guideSize') || 'off';
+    const guideSize = localStorage.getItem('guideSize') || 'small';
     document.documentElement.classList.remove('guide-small', 'guide-large', 'guide-off');
     document.documentElement.classList.add(`guide-${guideSize}`);
   }
