@@ -93,8 +93,7 @@ playground/
 │   ├── Draggable.min.js             # GSAP Draggable v3.11.5
 │   ├── rough.min.js                 # Rough.js v4.5.2
 │   ├── prism.min.js                 # Prism.js v1.29.0
-│   ├── prism-tomorrow.min.css       # Prism theme (inlined in head.html)
-│   └── typed.min.js                 # Typed.js v2.0.9
+│   └── prism-tomorrow.min.css       # Prism theme (inlined in head.html)
 ├── webflow custom code/
 │   ├── head.html                    # Copy into Webflow head custom code
 │   └── footer.html                  # Copy into Webflow footer custom code
@@ -107,7 +106,6 @@ playground/
 ├── code-display.js
 ├── info-guide-visibility.js
 ├── dark-light-mode.js
-├── typewriter.js
 ├── main-ui.js
 ├── dynamic-sizing.js
 ├── dev-mode.js
@@ -130,8 +128,7 @@ The build script concatenates files in this specific order (dependency-safe):
 | 2 | `vendor/Draggable.min.js` | GSAP plugin — depends on GSAP core |
 | 3 | `vendor/rough.min.js` | Independent library |
 | 4 | `vendor/prism.min.js` | Independent library |
-| 5 | `vendor/typed.min.js` | Independent library |
-| 6 | `get-page-id.js` | Resolves CMS data — should run first |
+| 5 | `get-page-id.js` | Resolves CMS data — should run first |
 | 7 | `collection-visibility.js` | Independent |
 | 8 | `itemhovershow-sizing.js` | Independent |
 | 9 | `audio-processing.js` | Independent |
@@ -140,10 +137,9 @@ The build script concatenates files in this specific order (dependency-safe):
 | 12 | `code-display.js` | Uses Prism.js (#4) |
 | 13 | `info-guide-visibility.js` | Independent |
 | 14 | `dark-light-mode.js` | Independent |
-| 15 | `typewriter.js` | Uses Typed.js (#5) |
-| 16 | `main-ui.js` | Uses GSAP, Draggable, rough.js |
-| 17 | `dynamic-sizing.js` | Independent |
-| 18 | `dev-mode.js` | Depends on main-ui.js globals |
+| 15 | `main-ui.js` | Uses GSAP, Draggable, rough.js |
+| 16 | `dynamic-sizing.js` | Independent |
+| 17 | `dev-mode.js` | Depends on main-ui.js globals |
 
 ---
 
