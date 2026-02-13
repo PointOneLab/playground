@@ -1,0 +1,230 @@
+<!-- Preload the main bundle so download starts immediately -->
+<link rel="preload" href="https://cdn.jsdelivr.net/gh/PointOneLab/playground@main/dist/bundle.js" as="script">
+
+<script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsfilter@1/cmsfilter.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmssort@1/cmssort.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
+
+<style>
+/* ============================================
+   Consolidated Global Styles
+   ============================================ */
+
+/* --- Global user-select disable --- */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+/* --- Touch-action overrides --- */
+.pow-library-container,
+.pow-library-container * {
+  touch-action: auto !important;
+}
+.pow-sticky,
+.pow-sticky * {
+  touch-action: auto !important;
+}
+
+/* --- Item handler hover states --- */
+.pow-item-handler, .pow-itemhovershow {
+  display: none;
+}
+.pow-item:hover .pow-item-handler {
+  display: block;
+  pointer-events: auto;
+  background-color: var(--black-1);
+}
+.pow-item:hover .pow-item-content .pow-itemhovershow {
+  display: flex;
+}
+
+/* --- Select appearance reset --- */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+}
+
+/* --- Code / pre / RTB styles --- */
+div > pre {
+  background-color: transparent !important;
+  font-family: var(--p-font, "Roboto Mono Variablefont Wght", sans-serif) !important;
+  font-size: 1.75vh !important;
+  line-height: 2.5vh !important;
+  font-weight: 400 !important;
+}
+div > pre[class*="language-"] {
+  font-family: var(--p-font, "Roboto Mono Variablefont Wght", sans-serif) !important;
+  font-size: 1.75vh !important;
+  line-height: 2.5vh !important;
+  font-weight: 400 !important;
+  background-color: transparent !important;
+  margin: 0vh !important;
+  padding: 2.5vh !important;
+}
+div > pre[class*="language-"] > code {
+  font-family: var(--p-font, "Roboto Mono Variablefont Wght", sans-serif) !important;
+  font-size: 1.75vh !important;
+  line-height: 2.5vh !important;
+  font-weight: 400 !important;
+  background-color: transparent !important;
+  margin: 2.5vh !important;
+  padding: 0 !important;
+  text-shadow: none !important;
+}
+.pow-rtb p {
+  white-space: normal;
+  word-break: break-word;
+}
+.pow-rtb video {
+  margin-bottom: 2.5vh;
+  background-color: var(--black-3, #000) !important;
+}
+
+/* --- Audio player --- */
+.audio-player {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5vh;
+  margin-bottom: 2.5vh;
+  box-sizing: border-box;
+  border: var(--grid-width, 1px) solid var(--black-3, #000) !important;
+}
+audio {
+  min-height: 54px;
+}
+
+/* --- hr / details / summary --- */
+hr {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: none;
+  unicode-bidi: normal;
+  overflow: visible;
+  border-bottom: var(--grid-width) solid var(--black-3);
+  margin-bottom: 2.5vh;
+}
+details {
+  margin-bottom: 0vh;
+}
+summary {
+  margin-bottom: 2.5vh;
+  color: var(--black-1);
+  cursor: pointer;
+}
+summary:hover {
+  opacity: 0.5;
+}
+
+/* --- Board guide lines --- */
+.pow-board-guide-line {
+  background-image: radial-gradient(circle, var(--black-2) 1px, transparent 1px);
+  background-size: 2.5vh 2.5vh;
+}
+.pow-board-guide-line2 {
+  position: relative;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='125' height='125' viewBox='0 0 125 125'%3E%3Cstyle%3E.small{stroke:rgba(228,58,243,0.3);stroke-width:1}.large{stroke:rgba(228,58,243,1);stroke-width:1}%3C/style%3E%3Cg fill='none'%3E%3Cpath class='large' d='M0,0 L0,125 M125,0 L125,125 M0,0 L125,0 M0,125 L125,125'/%3E%3Cpath class='small' d='M25,0 L25,125 M50,0 L50,125 M75,0 L75,125 M100,0 L100,125 M0,25 L125,25 M0,50 L125,50 M0,75 L125,75 M0,100 L125,100'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 12.5vh 12.5vh;
+}
+
+/* --- Temporarily hide body until settings applied --- */
+body {
+  visibility: hidden;
+}
+
+/* --- Dark Mode --- */
+.dark-mode .pow-reverseinbnw,
+.dark-mode .pow-item-hide {
+  filter: invert(100%) !important;
+}
+.dark-mode .pow-item-open {
+  filter: invert(100%) !important;
+}
+.dark-mode {
+  --black-1: rgba(247, 247, 247, 1);
+  --black-2: rgba(247, 247, 247, 0.5);
+  --black-3: rgba(247, 247, 247, 0.07);
+  --white-1: rgba(8, 8, 8, 1);
+  --white-2: rgba(8, 8, 8, 0.5);
+  --white-3: rgba(8, 8, 8, 0.07);
+  --transparent: transparent;
+}
+
+/* --- Light Mode (default) --- */
+.light-mode .pow-reverseinbnw,
+.light-mode .pow-item-hide {
+  filter: invert(0%) !important;
+}
+.light-mode .pow-item-open {
+  filter: invert(0%) !important;
+}
+.light-mode {
+  --black-1: rgba(8, 8, 8, 1);
+  --black-2: rgba(8, 8, 8, 0.5);
+  --black-3: rgba(8, 8, 8, 0.07);
+  --white-1: rgba(247, 247, 247, 1);
+  --white-2: rgba(247, 247, 247, 0.5);
+  --white-3: rgba(247, 247, 247, 0.07);
+  --transparent: transparent;
+}
+
+/* --- Guide visibility --- */
+.guide-small .pow-board-guide-line { opacity: 100%; }
+.guide-small .pow-board-guide-line2 { opacity: 0%; }
+.guide-large .pow-board-guide-line { opacity: 0%; }
+.guide-large .pow-board-guide-line2 { opacity: 100%; }
+.guide-off .pow-board-guide-line,
+.guide-off .pow-board-guide-line2 { opacity: 0%; }
+
+/* --- Info group visibility --- */
+.info-visible .pow-infogroup.pow-2ndinfo { display: block; opacity: 100%; }
+.info-hidden .pow-infogroup.pow-2ndinfo { display: none; opacity: 0%; }
+.info-visible .pow-item-content { opacity: 15%; }
+.info-hidden .pow-item-content { opacity: 100%; }
+
+/* --- Selection disable --- */
+::selection { background: transparent; color: inherit; }
+::-moz-selection { background: transparent; color: inherit; }
+
+/* --- Prism.js Tomorrow Theme (inlined from footer) --- */
+code[class*=language-],pre[class*=language-]{color:#ccc;background:0 0;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#2d2d2d}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.block-comment,.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#999}.token.punctuation{color:#ccc}.token.attr-name,.token.deleted,.token.namespace,.token.tag{color:#e2777a}.token.function-name{color:#6196cc}.token.boolean,.token.function,.token.number{color:#f08d49}.token.class-name,.token.constant,.token.property,.token.symbol{color:#f8c555}.token.atrule,.token.builtin,.token.important,.token.keyword,.token.selector{color:#cc99cd}.token.attr-value,.token.char,.token.regex,.token.string,.token.variable{color:#7ec699}.token.entity,.token.operator,.token.url{color:#67cdcc}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}.token.inserted{color:green}
+</style>
+
+<script>
+(function() {
+  const darkMode = localStorage.getItem('darkMode') || 'off';
+  if (darkMode === 'on') {
+    document.documentElement.classList.add('dark-mode');
+    document.documentElement.classList.remove('light-mode');
+  } else {
+    document.documentElement.classList.add('light-mode');
+    document.documentElement.classList.remove('dark-mode');
+  }
+})();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Apply dark or light mode on page load
+  const darkMode = localStorage.getItem('darkMode') || 'off';
+  if (darkMode === 'on') {
+    document.documentElement.classList.add('dark-mode');
+  } else {
+    document.documentElement.classList.add('light-mode');
+  }
+
+  // Apply guide and info group visibility
+  const guideSize = localStorage.getItem('guideSize') || 'small';
+  document.documentElement.classList.add(`guide-${guideSize}`);
+
+  const infoGroupVisible = localStorage.getItem('infoGroupVisible') || 'off';
+  document.documentElement.classList.add(infoGroupVisible === 'on' ? 'info-visible' : 'info-hidden');
+
+  document.body.style.visibility = 'visible';
+});
+</script>
