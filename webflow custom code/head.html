@@ -1,0 +1,759 @@
+<!-- Preload the main bundle so download starts immediately -->
+<link rel="preload" href="https://cdn.jsdelivr.net/gh/PointOneLab/playground@main/dist/bundle.js" as="script">
+
+<script>
+(function() {
+  // ============================================
+  // CONFIGURATION - Edit these values as needed
+  // ============================================
+  
+  const CONFIG = {
+    // Timing (in milliseconds)
+    timing: {
+      minimumDisplayTime: 1000,       // Minimum time to show loader (prevents flashing)
+      stallTimeout: 3000,            // If no progress for this long, consider complete
+      absoluteMaxTimeout: 10000,      // Never wait longer than this
+      slowNetworkThreshold: 5000,    // Time before showing "slow network" message
+      slowNetworkProgressLimit: 80,   // If progress below this % when threshold hit, show message
+      fadeOutDuration: 500,           // Overlay fade out animation duration
+      completeDelay: 200,             // Small delay after 100% before fade starts
+    },
+    
+    // Resource tracking
+    resourceTracking: {
+      images: true,
+      videos: true,
+      iframes: true,
+      fonts: true,
+      recheckInterval: 500,           // How often to recheck for dynamically added images (ms)
+      maxRecheckTime: 5000,           // Stop rechecking after this time (ms)
+    },
+    
+    // Progress display
+    display: {
+      decimalPlaces: 1,               // Decimal places for percentage (0, 1, 2, etc.)
+    },
+    
+    // Progress simulation (fills gaps between real resource loads)
+    simulation: {
+      enabled: true,
+      interval: 150,
+      maxSimulatedProgress: 85,
+      incrementMin: 0.3,
+      incrementMax: 1.5,
+    },
+    
+    // Text content
+    text: {
+      loading: 'Loading for Stories',
+      slowNetwork: 'Hold on...',
+    },
+    
+    // Fonts to wait for (optional - leave empty to wait for all fonts generically)
+    fontsToTrack: [],
+  };
+  
+  // ============================================
+  // LOADER LOGIC - No need to edit below
+  // ============================================
+  
+  const state = {
+    progress: 0,
+    displayedProgress: 0,
+    startTime: Date.now(),
+    lastProgressTime: Date.now(),
+    slowNetworkMessageShown: false,
+    isComplete: false,
+    resources: new Map(),
+    resourcesTotal: 0,
+    resourcesLoaded: 0,
+    fontsLoaded: false,
+    simulatedProgress: 0,
+    windowLoaded: false,
+    recheckCount: 0,
+  };
+  
+  let elements = {};
+  let simulationInterval = null;
+  let recheckInterval = null;
+  let stallCheckInterval = null;
+  
+  // Create and inject styles
+  function injectStyles() {
+    const css = `
+      .pol-loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--white-1);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        transition: opacity ${CONFIG.timing.fadeOutDuration}ms ease;
+      }
+      .pol-loading-overlay--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .pol-loading-overlay__container {
+        position: relative;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pol-loading-overlay__text {
+        font-family: var(--p-font);
+        font-size: 1.75vh;
+        line-height: 2.5vh;
+        color: var(--black-2);
+        top: 2.5vh;
+        text-align: center;
+        position: absolute;
+      }
+      .pol-loading-overlay__progress-track {
+        position: relative;
+        width: 50vh;
+        max-width: 80vw;
+        height: 2.5vh;
+        background: var(--black-2);
+        overflow: hidden;
+      }
+      .pol-loading-overlay__progress-bar {
+        height: 100%;
+        width: 0%;
+        background: var(--black-1);
+        transition: width 0.15s ease-out;
+      }
+      .pol-loading-overlay__percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: var(--p-font);
+        font-size: 1.75vh;
+        line-height: 2.5vh;
+        color: var(--white-1);
+        white-space: nowrap;
+      }
+      .pol-loading-overlay__slow-message {
+        position: absolute;
+        top: 2.5vh;
+        font-family: var(--p-font);
+        font-size: 1.75vh;
+        line-height: 2.5vh;
+        color: var(--black-2);
+        text-align: center;
+        width: 50vh;
+        max-width: 80vw;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .pol-loading-overlay__slow-message--visible {
+        opacity: 1;
+      }
+    `;
+    
+    const style = document.createElement('style');
+    style.id = 'pol-loading-overlay-styles';
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+  
+  // Create and inject HTML
+  function injectHTML() {
+    const overlay = document.createElement('div');
+    overlay.className = 'pol-loading-overlay';
+    overlay.innerHTML = `
+      <div class="pol-loading-overlay__container">
+        <div class="pol-loading-overlay__text">${CONFIG.text.loading}</div>
+        <div class="pol-loading-overlay__progress-track">
+          <div class="pol-loading-overlay__progress-bar"></div>
+          <div class="pol-loading-overlay__percentage">0.0%</div>
+        </div>
+        <div class="pol-loading-overlay__slow-message">${CONFIG.text.slowNetwork}</div>
+      </div>
+    `;
+    
+    document.body.insertBefore(overlay, document.body.firstChild);
+    
+    elements = {
+      overlay: overlay,
+      text: overlay.querySelector('.pol-loading-overlay__text'),
+      progressBar: overlay.querySelector('.pol-loading-overlay__progress-bar'),
+      percentage: overlay.querySelector('.pol-loading-overlay__percentage'),
+      slowMessage: overlay.querySelector('.pol-loading-overlay__slow-message'),
+    };
+  }
+  
+  // Format percentage with configured decimal places
+  function formatPercentage(value) {
+    return value.toFixed(CONFIG.display.decimalPlaces) + '%';
+  }
+  
+  // Update displayed progress
+  function updateDisplay(percent) {
+    const clampedPercent = Math.min(percent, 100);
+    state.displayedProgress = clampedPercent;
+    
+    if (elements.progressBar) {
+      elements.progressBar.style.width = clampedPercent + '%';
+    }
+    if (elements.percentage) {
+      elements.percentage.textContent = formatPercentage(clampedPercent);
+    }
+  }
+  
+  // Calculate real progress based on loaded resources
+  function calculateRealProgress() {
+    let totalWeight = 0;
+    let loadedWeight = 0;
+    
+    // Resources weight (80% if tracking fonts, 100% otherwise)
+    const resourceWeight = CONFIG.resourceTracking.fonts ? 80 : 100;
+    const fontWeight = CONFIG.resourceTracking.fonts ? 20 : 0;
+    
+    if (state.resourcesTotal > 0) {
+      loadedWeight += (state.resourcesLoaded / state.resourcesTotal) * resourceWeight;
+    } else {
+      loadedWeight += resourceWeight;
+    }
+    totalWeight += resourceWeight;
+    
+    if (CONFIG.resourceTracking.fonts) {
+      if (state.fontsLoaded) {
+        loadedWeight += fontWeight;
+      }
+      totalWeight += fontWeight;
+    }
+    
+    return (loadedWeight / totalWeight) * 100;
+  }
+  
+  // Check if all resources are truly loaded
+  function areAllResourcesLoaded() {
+    if (state.resourcesTotal === 0) {
+      return state.fontsLoaded && state.windowLoaded;
+    }
+    
+    const resourcesDone = state.resourcesLoaded >= state.resourcesTotal;
+    const fontsDone = !CONFIG.resourceTracking.fonts || state.fontsLoaded;
+    
+    return resourcesDone && fontsDone && state.windowLoaded;
+  }
+  
+  // Main progress update function
+  function updateProgress() {
+    if (state.isComplete) return;
+    
+    const realProgress = calculateRealProgress();
+    
+    // If real progress increased, update last progress time
+    if (realProgress > state.progress) {
+      state.lastProgressTime = Date.now();
+    }
+    
+    const effectiveProgress = Math.max(realProgress, state.simulatedProgress);
+    state.progress = Math.min(effectiveProgress, 100);
+    
+    updateDisplay(state.progress);
+    checkSlowNetwork();
+    
+    // Check for completion
+    if (areAllResourcesLoaded()) {
+      state.progress = 100;
+      updateDisplay(100);
+      completeLoading();
+    }
+  }
+  
+  // Simulated progress (fills gaps between resource loads)
+  function startSimulation() {
+    if (!CONFIG.simulation.enabled) return;
+    
+    simulationInterval = setInterval(() => {
+      if (state.isComplete) {
+        clearInterval(simulationInterval);
+        return;
+      }
+      
+      if (state.simulatedProgress < CONFIG.simulation.maxSimulatedProgress) {
+        const increment = CONFIG.simulation.incrementMin + 
+          Math.random() * (CONFIG.simulation.incrementMax - CONFIG.simulation.incrementMin);
+        state.simulatedProgress = Math.min(
+          state.simulatedProgress + increment,
+          CONFIG.simulation.maxSimulatedProgress
+        );
+        updateProgress();
+      }
+    }, CONFIG.simulation.interval);
+  }
+  
+  // Check if we should show slow network message
+  function checkSlowNetwork() {
+    if (state.slowNetworkMessageShown) return;
+    
+    const elapsed = Date.now() - state.startTime;
+    
+    if (elapsed >= CONFIG.timing.slowNetworkThreshold && 
+        state.progress < CONFIG.timing.slowNetworkProgressLimit) {
+      state.slowNetworkMessageShown = true;
+      
+      // Replace loading text with slow network message
+      if (elements.text) {
+        elements.text.textContent = CONFIG.text.slowNetwork;
+      }
+    }
+  }
+  
+  // Check for stalled progress
+  function startStallCheck() {
+    stallCheckInterval = setInterval(() => {
+      if (state.isComplete) {
+        clearInterval(stallCheckInterval);
+        return;
+      }
+      
+      const timeSinceProgress = Date.now() - state.lastProgressTime;
+      const totalElapsed = Date.now() - state.startTime;
+      
+      // If progress has stalled and we've waited minimum time
+      if (timeSinceProgress >= CONFIG.timing.stallTimeout && 
+          totalElapsed >= CONFIG.timing.minimumDisplayTime) {
+        state.progress = 100;
+        updateDisplay(100);
+        completeLoading();
+      }
+      
+      // Absolute maximum timeout
+      if (totalElapsed >= CONFIG.timing.absoluteMaxTimeout) {
+        state.progress = 100;
+        updateDisplay(100);
+        completeLoading();
+      }
+    }, 1000);
+  }
+  
+  // Complete and hide loader
+  function completeLoading() {
+    if (state.isComplete) return;
+    state.isComplete = true;
+    
+    // Clear all intervals
+    if (simulationInterval) clearInterval(simulationInterval);
+    if (recheckInterval) clearInterval(recheckInterval);
+    if (stallCheckInterval) clearInterval(stallCheckInterval);
+    
+    // Ensure we show 100%
+    updateDisplay(100);
+    
+    // Check minimum display time
+    const elapsed = Date.now() - state.startTime;
+    const remainingMinTime = Math.max(0, CONFIG.timing.minimumDisplayTime - elapsed);
+    
+    setTimeout(() => {
+      setTimeout(() => {
+        if (elements.overlay) {
+          elements.overlay.classList.add('pol-loading-overlay--hidden');
+          
+          // Remove from DOM after fade
+          setTimeout(() => {
+            if (elements.overlay && elements.overlay.parentNode) {
+              elements.overlay.parentNode.removeChild(elements.overlay);
+            }
+            // Also remove styles
+            const styleEl = document.getElementById('pol-loading-overlay-styles');
+            if (styleEl) {
+              styleEl.parentNode.removeChild(styleEl);
+            }
+          }, CONFIG.timing.fadeOutDuration);
+        }
+      }, CONFIG.timing.completeDelay);
+    }, remainingMinTime);
+  }
+  
+  // Track a single resource
+  function trackResource(resource, type) {
+    // Skip if already tracked
+    if (state.resources.has(resource)) return;
+    
+    state.resources.set(resource, { type: type, loaded: false });
+    state.resourcesTotal++;
+    
+    // Check if already loaded
+    const isLoaded = (type === 'img' && resource.complete && resource.naturalWidth > 0) ||
+                     (type === 'video' && resource.readyState >= 3) ||
+                     (type === 'iframe' && resource.contentDocument);
+    
+    if (isLoaded) {
+      state.resources.get(resource).loaded = true;
+      state.resourcesLoaded++;
+      updateProgress();
+    } else {
+      const onLoad = () => {
+        if (!state.resources.get(resource).loaded) {
+          state.resources.get(resource).loaded = true;
+          state.resourcesLoaded++;
+          state.lastProgressTime = Date.now();
+          updateProgress();
+        }
+        resource.removeEventListener('load', onLoad);
+        resource.removeEventListener('error', onError);
+      };
+      
+      const onError = () => {
+        if (!state.resources.get(resource).loaded) {
+          state.resources.get(resource).loaded = true;
+          state.resourcesLoaded++;
+          state.lastProgressTime = Date.now();
+          updateProgress();
+        }
+        resource.removeEventListener('load', onLoad);
+        resource.removeEventListener('error', onError);
+      };
+      
+      resource.addEventListener('load', onLoad);
+      resource.addEventListener('error', onError);
+    }
+  }
+  
+  // Scan DOM for resources
+  function scanForResources() {
+    if (CONFIG.resourceTracking.images) {
+      document.querySelectorAll('img').forEach(img => trackResource(img, 'img'));
+    }
+    if (CONFIG.resourceTracking.videos) {
+      document.querySelectorAll('video').forEach(video => trackResource(video, 'video'));
+    }
+    if (CONFIG.resourceTracking.iframes) {
+      document.querySelectorAll('iframe').forEach(iframe => trackResource(iframe, 'iframe'));
+    }
+  }
+  
+  // Start periodic recheck for dynamically added resources
+  function startResourceRecheck() {
+    const startTime = Date.now();
+    
+    recheckInterval = setInterval(() => {
+      if (state.isComplete) {
+        clearInterval(recheckInterval);
+        return;
+      }
+      
+      // Stop rechecking after max time
+      if (Date.now() - startTime > CONFIG.resourceTracking.maxRecheckTime) {
+        clearInterval(recheckInterval);
+        return;
+      }
+      
+      scanForResources();
+    }, CONFIG.resourceTracking.recheckInterval);
+  }
+  
+  // Track font loading
+  function trackFonts() {
+    if (!CONFIG.resourceTracking.fonts) {
+      state.fontsLoaded = true;
+      return;
+    }
+    
+    if (CONFIG.fontsToTrack.length > 0 && document.fonts) {
+      const fontPromises = CONFIG.fontsToTrack.map(font => {
+        const fontString = `${font.weight || 'normal'} ${font.style || 'normal'} 16px "${font.family}"`;
+        return document.fonts.load(fontString).catch(() => {});
+      });
+      
+      Promise.all(fontPromises).then(() => {
+        state.fontsLoaded = true;
+        state.lastProgressTime = Date.now();
+        updateProgress();
+      });
+    } else if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        state.fontsLoaded = true;
+        state.lastProgressTime = Date.now();
+        updateProgress();
+      });
+    } else {
+      state.fontsLoaded = true;
+    }
+  }
+  
+  // Listen for window load
+  function setupWindowLoad() {
+    if (document.readyState === 'complete') {
+      state.windowLoaded = true;
+      state.lastProgressTime = Date.now();
+      updateProgress();
+    } else {
+      window.addEventListener('load', () => {
+        state.windowLoaded = true;
+        state.lastProgressTime = Date.now();
+        updateProgress();
+      });
+    }
+  }
+  
+  // Initialize
+  function init() {
+    injectStyles();
+    
+    const startLoader = () => {
+      injectHTML();
+      scanForResources();
+      trackFonts();
+      startSimulation();
+      startResourceRecheck();
+      startStallCheck();
+      setupWindowLoad();
+      
+      // Initial progress update
+      updateProgress();
+    };
+    
+    if (document.body) {
+      startLoader();
+    } else {
+      document.addEventListener('DOMContentLoaded', startLoader);
+    }
+  }
+  
+  init();
+})();
+</script>
+
+<script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsfilter@1/cmsfilter.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmssort@1/cmssort.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
+
+<style>
+/* ============================================
+   Consolidated Global Styles
+   ============================================ */
+
+/* --- Global user-select disable --- */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+/* --- Touch-action overrides --- */
+.pow-library-container,
+.pow-library-container * {
+  touch-action: auto !important;
+}
+.pow-sticky,
+.pow-sticky * {
+  touch-action: auto !important;
+}
+
+/* --- Item handler hover states --- */
+.pow-item-handler, .pow-itemhovershow {
+  display: none;
+}
+.pow-item:hover .pow-item-handler {
+  display: block;
+  pointer-events: auto;
+  background-color: var(--black-1);
+}
+.pow-item:hover .pow-item-content .pow-itemhovershow {
+  display: flex;
+}
+
+/* --- Select appearance reset --- */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+}
+
+/* --- Code / pre / RTB styles --- */
+div > pre {
+  background-color: transparent !important;
+  font-family: var(--p-font, "Roboto Mono Variablefont Wght", sans-serif) !important;
+  font-size: 1.75vh !important;
+  line-height: 2.5vh !important;
+  font-weight: 400 !important;
+}
+div > pre[class*="language-"] {
+  font-family: var(--p-font, "Roboto Mono Variablefont Wght", sans-serif) !important;
+  font-size: 1.75vh !important;
+  line-height: 2.5vh !important;
+  font-weight: 400 !important;
+  background-color: transparent !important;
+  margin: 0vh !important;
+  padding: 2.5vh !important;
+}
+div > pre[class*="language-"] > code {
+  font-family: var(--p-font, "Roboto Mono Variablefont Wght", sans-serif) !important;
+  font-size: 1.75vh !important;
+  line-height: 2.5vh !important;
+  font-weight: 400 !important;
+  background-color: transparent !important;
+  margin: 2.5vh !important;
+  padding: 0 !important;
+  text-shadow: none !important;
+}
+.pow-rtb p {
+  white-space: normal;
+  word-break: break-word;
+}
+.pow-rtb video {
+  margin-bottom: 2.5vh;
+  background-color: var(--black-3, #000) !important;
+}
+
+/* --- Audio player --- */
+.audio-player {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5vh;
+  margin-bottom: 2.5vh;
+  box-sizing: border-box;
+  border: var(--grid-width, 1px) solid var(--black-3, #000) !important;
+}
+audio {
+  min-height: 54px;
+}
+
+/* --- hr / details / summary --- */
+hr {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: none;
+  unicode-bidi: normal;
+  overflow: visible;
+  border-bottom: var(--grid-width) solid var(--black-3);
+  margin-bottom: 2.5vh;
+}
+details {
+  margin-bottom: 0vh;
+}
+summary {
+  margin-bottom: 2.5vh;
+  color: var(--black-1);
+  cursor: pointer;
+}
+summary:hover {
+  opacity: 0.5;
+}
+
+/* --- Board guide lines --- */
+.pow-board-guide-line {
+  background-image: radial-gradient(circle, var(--black-2) 1px, transparent 1px);
+  background-size: 2.5vh 2.5vh;
+}
+.pow-board-guide-line2 {
+  position: relative;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='125' height='125' viewBox='0 0 125 125'%3E%3Cstyle%3E.small{stroke:rgba(228,58,243,0.3);stroke-width:1}.large{stroke:rgba(228,58,243,1);stroke-width:1}%3C/style%3E%3Cg fill='none'%3E%3Cpath class='large' d='M0,0 L0,125 M125,0 L125,125 M0,0 L125,0 M0,125 L125,125'/%3E%3Cpath class='small' d='M25,0 L25,125 M50,0 L50,125 M75,0 L75,125 M100,0 L100,125 M0,25 L125,25 M0,50 L125,50 M0,75 L125,75 M0,100 L125,100'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 12.5vh 12.5vh;
+}
+
+/* --- Temporarily hide body until settings applied --- */
+body {
+  visibility: hidden;
+}
+
+/* --- Dark Mode --- */
+.dark-mode .pow-reverseinbnw,
+.dark-mode .pow-item-hide {
+  filter: invert(100%) !important;
+}
+.dark-mode .pow-item-open {
+  filter: invert(100%) !important;
+}
+.dark-mode {
+  --black-1: rgba(247, 247, 247, 1);
+  --black-2: rgba(247, 247, 247, 0.5);
+  --black-3: rgba(247, 247, 247, 0.07);
+  --white-1: rgba(8, 8, 8, 1);
+  --white-2: rgba(8, 8, 8, 0.5);
+  --white-3: rgba(8, 8, 8, 0.07);
+  --transparent: transparent;
+}
+
+/* --- Light Mode (default) --- */
+.light-mode .pow-reverseinbnw,
+.light-mode .pow-item-hide {
+  filter: invert(0%) !important;
+}
+.light-mode .pow-item-open {
+  filter: invert(0%) !important;
+}
+.light-mode {
+  --black-1: rgba(8, 8, 8, 1);
+  --black-2: rgba(8, 8, 8, 0.5);
+  --black-3: rgba(8, 8, 8, 0.07);
+  --white-1: rgba(247, 247, 247, 1);
+  --white-2: rgba(247, 247, 247, 0.5);
+  --white-3: rgba(247, 247, 247, 0.07);
+  --transparent: transparent;
+}
+
+/* --- Guide visibility --- */
+.guide-small .pow-board-guide-line { opacity: 100%; }
+.guide-small .pow-board-guide-line2 { opacity: 0%; }
+.guide-large .pow-board-guide-line { opacity: 0%; }
+.guide-large .pow-board-guide-line2 { opacity: 100%; }
+.guide-off .pow-board-guide-line,
+.guide-off .pow-board-guide-line2 { opacity: 0%; }
+
+/* --- Info group visibility --- */
+.info-visible .pow-infogroup.pow-2ndinfo { display: block; opacity: 100%; }
+.info-hidden .pow-infogroup.pow-2ndinfo { display: none; opacity: 0%; }
+.info-visible .pow-item-content { opacity: 15%; }
+.info-hidden .pow-item-content { opacity: 100%; }
+
+/* --- Selection disable --- */
+::selection { background: transparent; color: inherit; }
+::-moz-selection { background: transparent; color: inherit; }
+
+/* --- Prism.js Tomorrow Theme (inlined from footer) --- */
+code[class*=language-],pre[class*=language-]{color:#ccc;background:0 0;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#2d2d2d}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.block-comment,.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#999}.token.punctuation{color:#ccc}.token.attr-name,.token.deleted,.token.namespace,.token.tag{color:#e2777a}.token.function-name{color:#6196cc}.token.boolean,.token.function,.token.number{color:#f08d49}.token.class-name,.token.constant,.token.property,.token.symbol{color:#f8c555}.token.atrule,.token.builtin,.token.important,.token.keyword,.token.selector{color:#cc99cd}.token.attr-value,.token.char,.token.regex,.token.string,.token.variable{color:#7ec699}.token.entity,.token.operator,.token.url{color:#67cdcc}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}.token.inserted{color:green}
+</style>
+
+<script>
+(function() {
+  const darkMode = localStorage.getItem('darkMode') || 'off';
+  if (darkMode === 'on') {
+    document.documentElement.classList.add('dark-mode');
+    document.documentElement.classList.remove('light-mode');
+  } else {
+    document.documentElement.classList.add('light-mode');
+    document.documentElement.classList.remove('dark-mode');
+  }
+})();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Apply dark or light mode on page load
+  const darkMode = localStorage.getItem('darkMode') || 'off';
+  if (darkMode === 'on') {
+    document.documentElement.classList.add('dark-mode');
+  } else {
+    document.documentElement.classList.add('light-mode');
+  }
+
+  // Apply guide and info group visibility
+  const guideSize = localStorage.getItem('guideSize') || 'small';
+  document.documentElement.classList.add(`guide-${guideSize}`);
+
+  const infoGroupVisible = localStorage.getItem('infoGroupVisible') || 'off';
+  document.documentElement.classList.add(infoGroupVisible === 'on' ? 'info-visible' : 'info-hidden');
+
+  document.body.style.visibility = 'visible';
+});
+</script>

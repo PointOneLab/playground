@@ -1,0 +1,17 @@
+<!-- Single bundled file: all vendor libs + all project scripts -->
+<script defer src="https://cdn.jsdelivr.net/gh/PointOneLab/playground@main/dist/bundle.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  ['.pow-content', '.pow-info'].forEach(function(selector) {
+    var el = document.querySelector(selector);
+    if (!el) return;
+    el.addEventListener('mouseover', function() {
+      document.body.style.overflow = 'hidden';
+    });
+    el.addEventListener('mouseout', function() {
+      document.body.style.overflow = 'auto';
+    });
+  });
+});
+</script>
